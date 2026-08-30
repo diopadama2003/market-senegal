@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -118,13 +119,61 @@
       border-radius: 20px;
       cursor: pointer;
     }
+
+    /* ===== Panier ===== */
+    .panneau-panier {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 300px;
+      height: 100%;
+      background: white;
+      box-shadow: -4px 0 12px rgba(0,0,0,0.2);
+      transition: right 0.3s ease;
+      padding: 20px;
+      box-sizing: border-box;
+      z-index: 100;
+    }
+
+    .panneau-panier.ouvert {
+      right: 0;
+    }
+
+    .panneau-panier h3 {
+      margin-top: 0;
+    }
+
+    .ligne-panier {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding: 8px 0;
+      font-size: 0.9rem;
+    }
+
+    .panier-total {
+      margin-top: 16px;
+      font-weight: bold;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #fermer-panier {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      float: right;
+    }
   </style>
 </head>
 <body>
 
   <header>
     <h2>MarketSenegal</h2>
-    <button>🧺 Panier (0)</button>
+    <button id="btn-panier">🧺 Panier (<span id="panier-count">0</span>)</button>
   </header>
 
   <section class="hero">
@@ -145,34 +194,85 @@
 
   <div class="grille-produits">
 
-    <div class="carte-produit">
+    <div class="carte-produit" data-nom="Sac de riz 25kg" data-prix="12500">
       <img src="https://placehold.co/300x200?text=Riz" alt="Riz">
       <div class="carte-produit-info">
         <p>Sac de riz 25kg</p>
         <p class="prix">12 500 F CFA</p>
-        <button>Ajouter</button>
+        <button class="btn-ajouter">Ajouter</button>
       </div>
     </div>
 
-    <div class="carte-produit">
+    <div class="carte-produit" data-nom="Chaussures homme" data-prix="8000">
       <img src="https://placehold.co/300x200?text=Chaussures" alt="Chaussures">
       <div class="carte-produit-info">
         <p>Chaussures homme</p>
         <p class="prix">8 000 F CFA</p>
-        <button>Ajouter</button>
+        <button class="btn-ajouter">Ajouter</button>
       </div>
     </div>
 
-    <div class="carte-produit">
+    <div class="carte-produit" data-nom="Téléphone Android" data-prix="65000">
       <img src="https://placehold.co/300x200?text=Telephone" alt="Téléphone">
       <div class="carte-produit-info">
         <p>Téléphone Android</p>
         <p class="prix">65 000 F CFA</p>
-        <button>Ajouter</button>
+        <button class="btn-ajouter">Ajouter</button>
       </div>
     </div>
 
   </div>
+
+  <!-- Panneau panier -->
+  <div class="panneau-panier" id="panneau-panier">
+    <button id="fermer-panier">✕</button>
+    <h3>Ton panier</h3>
+    <div id="liste-panier"></div>
+    <div class="panier-total">
+      <span>Total</span>
+      <span id="panier-total">0 F CFA</span>
+    </div>
+  </div>
+
+  <script>
+    let panier = [];
+
+    const panneauPanier = document.getElementById("panneau-panier");
+    const listePanier = document.getElementById("liste-panier");
+    const panierCount = document.getElementById("panier-count");
+    const panierTotal = document.getElementById("panier-total");
+
+    document.getElementById("btn-panier").addEventListener("click", () => {
+      panneauPanier.classList.add("ouvert");
+    });
+
+    document.getElementById("fermer-panier").addEventListener("click", () => {
+      panneauPanier.classList.remove("ouvert");
+    });
+
+    document.querySelectorAll(".btn-ajouter").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const carte = btn.closest(".carte-produit");
+        const nom = carte.dataset.nom;
+        const prix = Number(carte.dataset.prix);
+        panier.push({ nom, prix });
+        afficherPanier();
+        panneauPanier.classList.add("ouvert");
+      });
+    });
+
+    function afficherPanier() {
+      panierCount.textContent = panier.length;
+      listePanier.innerHTML = panier.map(p => `
+        <div class="ligne-panier">
+          <span>${p.nom}</span>
+          <span>${p.prix.toLocaleString("fr-FR")} F CFA</span>
+        </div>
+      `).join("");
+      const total = panier.reduce((s, p) => s + p.prix, 0);
+      panierTotal.textContent = total.toLocaleString("fr-FR") + " F CFA";
+    }
+  </script>
 
 </body>
 </html>
