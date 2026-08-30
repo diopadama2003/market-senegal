@@ -4,6 +4,88 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MarketSenegal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #FAF6EE;
+      color: #222;
+    }
+
+    header {
+      background: #16213E;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 25px;
+    }
+
+    header h2 {
+      margin: 0;
+    }
+
+    header button {
+      background: #F5A623;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .hero {
+      background: #1F2E52;
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 2rem;
+    }
+
+    .grille-produits {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .carte-produit {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .carte-produit img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+    }
+
+    .carte-produit-info {
+      padding: 12px;
+    }
+
+    .prix {
+      color: #D6336C;
+      font-weight: bold;
+      margin: 8px 0;
+    }
+
+    .carte-produit button {
+      background: #16213E;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
 
@@ -11,6 +93,42 @@
     <h2>MarketSenegal</h2>
     <button>🧺 Panier (0)</button>
   </header>
+
+  <section class="hero">
+    <h1>Le marché sénégalais, dans ta poche</h1>
+    <p>Trouve tout ce qu'on vend au Sénégal, et fais-toi livrer.</p>
+  </section>
+
+  <div class="grille-produits">
+
+    <div class="carte-produit">
+      <img src="https://placehold.co/300x200?text=Riz" alt="Riz">
+      <div class="carte-produit-info">
+        <p>Sac de riz 25kg</p>
+        <p class="prix">12 500 F CFA</p>
+        <button>Ajouter</button>
+      </div>
+    </div>
+
+    <div class="carte-produit">
+      <img src="https://placehold.co/300x200?text=Chaussures" alt="Chaussures">
+      <div class="carte-produit-info">
+        <p>Chaussures homme</p>
+        <p class="prix">8 000 F CFA</p>
+        <button>Ajouter</button>
+      </div>
+    </div>
+
+    <div class="carte-produit">
+      <img src="https://placehold.co/300x200?text=Telephone" alt="Téléphone">
+      <div class="carte-produit-info">
+        <p>Téléphone Android</p>
+        <p class="prix">65 000 F CFA</p>
+        <button>Ajouter</button>
+      </div>
+    </div>
+
+  </div>
 
 </body>
 </html>
