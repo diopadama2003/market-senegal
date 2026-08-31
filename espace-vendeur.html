@@ -79,10 +79,23 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .message {
       font-size: 0.9rem;
       font-weight: bold;
       min-height: 20px;
+    }
+
+    .apercu-image {
+      max-width: 120px;
+      max-height: 120px;
+      border-radius: 8px;
+      margin-top: 8px;
+      display: none;
     }
 
     .produit-ligne {
@@ -122,10 +135,11 @@
         <label>Catégorie
           <input type="text" name="categorie" required placeholder="Alimentation, Vêtements, Parfums...">
         </label>
-        <label>Lien de l'image (URL)
-          <input type="url" name="image" required placeholder="https://...">
+        <label>Photo du produit
+          <input type="file" name="image" accept="image/*" required id="champ-image">
+          <img id="apercu-image" class="apercu-image">
         </label>
-        <button type="submit">Publier le produit</button>
+        <button type="submit" id="btn-publier">Publier le produit</button>
       </form>
       <p class="message" id="message-produit"></p>
     </div>
@@ -144,9 +158,10 @@
   <script src="js/firebase-config.js"></script>
 
   <script>
+    const IMGBB_API_KEY = "205f355eb54fb27d85eb89fcb0ea69c5";
+
     let vendeurConnecte = null;
 
-    // Vérifie que le vendeur est bien connecté, sinon renvoie vers vendeur.html
     auth.onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "vendeur.html";
@@ -160,16 +175,53 @@
       auth.signOut().then(() => (window.location.href = "vendeur.html"));
     });
 
+    // Aperçu de la photo choisie
+    const champImage = document.getElementById("champ-image");
+    const apercuImage = document.getElementById("apercu-image");
+    champImage.addEventListener("change", () => {
+      const fichier = champImage.files[0];
+      if (fichier) {
+        apercuImage.src = URL.createObjectURL(fichier);
+        apercuImage.style.display = "block";
+      }
+    });
+
+    // Envoie la photo vers ImgBB et renvoie le lien direct
+    async function envoyerPhoto(fichier) {
+      const formData = new FormData();
+      formData.append("image", fichier);
+      const reponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await reponse.json();
+      if (!data.success) throw new Error("Échec de l'envoi de la photo");
+      return data.data.url;
+    }
+
     // Ajouter un produit
     document.getElementById("form-produit").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.target;
       const messageEl = document.getElementById("message-produit");
+      const boutonPublier = document.getElementById("btn-publier");
+      const fichier = champImage.files[0];
+
+      if (!fichier) {
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Choisis une photo.";
+        return;
+      }
+
+      boutonPublier.disabled = true;
       messageEl.style.color = "#222";
-      messageEl.textContent = "Publication...";
+      messageEl.textContent = "Envoi de la photo...";
 
       try {
-        // On récupère les infos du vendeur (nom + whatsapp) pour les copier sur le produit
+        const lienImage = await envoyerPhoto(fichier);
+
+        messageEl.textContent = "Publication du produit...";
+
         const vendeurDoc = await db.collection("vendeurs").doc(vendeurConnecte.uid).get();
         const vendeurData = vendeurDoc.data();
 
@@ -177,7 +229,7 @@
           nom: form.nom.value,
           prix: Number(form.prix.value),
           categorie: form.categorie.value,
-          image: form.image.value,
+          image: lienImage,
           vendeurId: vendeurConnecte.uid,
           nomVendeur: vendeurData.nomVendeur,
           whatsappVendeur: vendeurData.whatsapp,
@@ -187,10 +239,13 @@
         messageEl.style.color = "green";
         messageEl.textContent = "Produit publié !";
         form.reset();
+        apercuImage.style.display = "none";
       } catch (err) {
         console.error(err);
         messageEl.style.color = "#D6336C";
         messageEl.textContent = "Erreur : " + err.message;
+      } finally {
+        boutonPublier.disabled = false;
       }
     });
 
