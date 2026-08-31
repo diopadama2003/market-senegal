@@ -10,3 +10,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const auth = firebase.auth();
+
+// Tes infos d'administrateur
+const ADMIN_UID = "3P8ligMxzcT3hv90yl42pI2lhxc2";
+const ADMIN_WHATSAPP = "221763530648";

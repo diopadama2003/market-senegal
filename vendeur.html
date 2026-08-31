@@ -172,6 +172,13 @@
         });
         messageEl.style.color = "green";
         messageEl.textContent = "Compte créé ! Redirection...";
+
+        // Notifie l'admin par WhatsApp
+        const texteAdmin = encodeURIComponent(
+          `Nouveau vendeur MarketSenegal\nBoutique: ${form.nomVendeur.value}\nEmail: ${form.email.value}\nWhatsApp: ${form.whatsapp.value}`
+        );
+        window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${texteAdmin}`, "_blank");
+
         setTimeout(() => (window.location.href = "espace-vendeur.html"), 1000);
       } catch (err) {
         console.error(err);

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketSenegal — Admin</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #FAF6EE;
+      color: #222;
+    }
+
+    header {
+      background: #16213E;
+      color: white;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header a { color: white; text-decoration: none; font-weight: bold; font-size: 1.2rem; }
+    #btn-deconnexion {
+      background: none; border: 1px solid white; color: white;
+      padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    }
+
+    .conteneur { max-width: 600px; margin: 30px auto; padding: 0 16px; }
+
+    .carte {
+      background: white; padding: 20px; border-radius: 10px;
+      border: 1px solid #ddd; margin-bottom: 20px; max-width: 380px;
+    }
+
+    label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 14px; }
+    input {
+      width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #ddd;
+      border-radius: 6px; box-sizing: border-box; font-size: 0.95rem;
+    }
+    button {
+      background: #16213E; color: white; border: none; padding: 10px 16px;
+      border-radius: 8px; font-weight: bold; cursor: pointer;
+    }
+    .message { font-size: 0.9rem; font-weight: bold; min-height: 20px; }
+
+    .titre-section { margin-top: 30px; }
+
+    .ligne {
+      background: white; border: 1px solid #ddd; border-radius: 8px;
+      padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .ligne button { background: #D6336C; padding: 5px 10px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html">MarketSenegal</a>
+    <button id="btn-deconnexion" style="display:none;">Se déconnecter</button>
+  </header>
+
+  <div class="conteneur">
+
+    <!-- Connexion admin -->
+    <div id="bloc-connexion" class="carte">
+      <h2>Connexion admin</h2>
+      <form id="form-connexion">
+        <label>Email
+          <input type="email" name="email" required>
+        </label>
+        <label>Mot de passe
+          <input type="password" name="motdepasse" required>
+        </label>
+        <button type="submit">Se connecter</button>
+      </form>
+      <p class="message" id="message-connexion"></p>
+    </div>
+
+    <!-- Contenu admin -->
+    <div id="bloc-admin" style="display:none;">
+      <h2>Tableau de bord</h2>
+
+      <h3 class="titre-section">Vendeurs inscrits (<span id="nb-vendeurs">0</span>)</h3>
+      <div id="liste-vendeurs"></div>
+
+      <h3 class="titre-section">Produits publiés (<span id="nb-produits">0</span>)</h3>
+      <div id="liste-produits-admin"></div>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    const blocConnexion = document.getElementById("bloc-connexion");
+    const blocAdmin = document.getElementById("bloc-admin");
+    const btnDeconnexion = document.getElementById("btn-deconnexion");
+
+    document.getElementById("form-connexion").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const messageEl = document.getElementById("message-connexion");
+      try {
+        await auth.signInWithEmailAndPassword(form.email.value, form.motdepasse.value);
+      } catch (err) {
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Email ou mot de passe incorrect.";
+      }
+    });
+
+    btnDeconnexion.addEventListener("click", () => auth.signOut());
+
+    auth.onAuthStateChanged((user) => {
+      if (user && user.uid === ADMIN_UID) {
+        blocConnexion.style.display = "none";
+        blocAdmin.style.display = "block";
+        btnDeconnexion.style.display = "inline-block";
+        chargerVendeurs();
+        chargerProduits();
+      } else if (user && user.uid !== ADMIN_UID) {
+        // Connecté mais pas admin -> on le déconnecte
+        alert("Ce compte n'est pas administrateur.");
+        auth.signOut();
+      } else {
+        blocConnexion.style.display = "block";
+        blocAdmin.style.display = "none";
+        btnDeconnexion.style.display = "none";
+      }
+    });
+
+    function chargerVendeurs() {
+      db.collection("vendeurs").onSnapshot((snapshot) => {
+        document.getElementById("nb-vendeurs").textContent = snapshot.size;
+        const liste = document.getElementById("liste-vendeurs");
+        if (snapshot.empty) {
+          liste.innerHTML = "<p>Aucun vendeur pour l'instant.</p>";
+          return;
+        }
+        liste.innerHTML = snapshot.docs
+          .map((doc) => {
+            const v = doc.data();
+            return `<div class="ligne"><span><strong>${v.nomVendeur || "?"}</strong> — ${v.email || ""} — ${v.whatsapp || ""}</span></div>`;
+          })
+          .join("");
+      });
+    }
+
+    function chargerProduits() {
+      db.collection("produits").orderBy("dateAjout", "desc").onSnapshot((snapshot) => {
+        document.getElementById("nb-produits").textContent = snapshot.size;
+        const liste = document.getElementById("liste-produits-admin");
+        if (snapshot.empty) {
+          liste.innerHTML = "<p>Aucun produit pour l'instant.</p>";
+          return;
+        }
+        liste.innerHTML = snapshot.docs
+          .map((doc) => {
+            const p = doc.data();
+            return `
+            <div class="ligne">
+              <span>${p.nom} — ${Number(p.prix).toLocaleString("fr-FR")} F CFA — <em>${p.nomVendeur || ""}</em></span>
+              <button data-id="${doc.id}">Supprimer</button>
+            </div>`;
+          })
+          .join("");
+        liste.querySelectorAll("button[data-id]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (confirm("Supprimer ce produit ?")) {
+              await db.collection("produits").doc(btn.dataset.id).delete();
+            }
+          });
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
