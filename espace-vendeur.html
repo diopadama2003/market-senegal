@@ -176,10 +176,24 @@
     auth.onAuthStateChanged((user) => {
       if (!user) {
         window.location.href = "vendeur.html";
-      } else {
-        vendeurConnecte = user;
-        chargerMesProduits();
+        return;
       }
+      vendeurConnecte = user;
+
+      if (!user.emailVerified) {
+        document.querySelector(".carte").innerHTML = `
+          <h2>Confirme ton email</h2>
+          <p>Un email de confirmation a été envoyé à <strong>${user.email}</strong>.
+          Clique sur le lien reçu, puis reviens ici et actualise la page pour pouvoir publier tes produits.</p>
+          <button id="btn-renvoyer">Renvoyer l'email de confirmation</button>
+        `;
+        document.getElementById("btn-renvoyer").addEventListener("click", () => {
+          user.sendEmailVerification().then(() => alert("Email renvoyé !"));
+        });
+        return;
+      }
+
+      chargerMesProduits();
     });
 
     document.getElementById("btn-deconnexion").addEventListener("click", () => {

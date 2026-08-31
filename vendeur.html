@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MarketSenegal — Espace vendeur</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     body {
       margin: 0;
@@ -142,6 +143,8 @@
   <script src="js/firebase-config.js"></script>
 
   <script>
+    emailjs.init("tulYYMgHIeGkicpqU");
+
     const blocInscription = document.getElementById("bloc-inscription");
     const blocConnexion = document.getElementById("bloc-connexion");
 
@@ -164,22 +167,27 @@
 
       try {
         const resultat = await auth.createUserWithEmailAndPassword(form.email.value, form.motdepasse.value);
+
         await db.collection("vendeurs").doc(resultat.user.uid).set({
           nomVendeur: form.nomVendeur.value,
           email: form.email.value,
           whatsapp: form.whatsapp.value,
           dateInscription: firebase.firestore.FieldValue.serverTimestamp(),
         });
+
+        // Email de vérification pour le vendeur
+        await resultat.user.sendEmailVerification();
+
+        // Notification automatique pour l'admin (toi), en arrière-plan
+        emailjs.send("service_wkkglfl", "template_oq5c5gr", {
+          nom_vendeur: form.nomVendeur.value,
+          email_vendeur: form.email.value,
+          whatsapp_vendeur: form.whatsapp.value,
+        });
+
         messageEl.style.color = "green";
-        messageEl.textContent = "Compte créé ! Redirection...";
-
-        // Notifie l'admin par WhatsApp
-        const texteAdmin = encodeURIComponent(
-          `Nouveau vendeur MarketSenegal\nBoutique: ${form.nomVendeur.value}\nEmail: ${form.email.value}\nWhatsApp: ${form.whatsapp.value}`
-        );
-        window.open(`https://wa.me/${ADMIN_WHATSAPP}?text=${texteAdmin}`, "_blank");
-
-        setTimeout(() => (window.location.href = "espace-vendeur.html"), 1000);
+        messageEl.textContent = "Compte créé ! Vérifie ta boîte email pour confirmer ton compte avant de publier.";
+        setTimeout(() => (window.location.href = "espace-vendeur.html"), 2500);
       } catch (err) {
         console.error(err);
         messageEl.style.color = "#D6336C";
