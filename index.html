@@ -21,6 +21,13 @@
       padding: 15px 25px;
     }
 
+    header nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-right: 16px;
+    }
+
     header h2 {
       margin: 0;
     }
@@ -79,6 +86,12 @@
       color: white;
     }
 
+    .etat {
+      text-align: center;
+      color: #888;
+      padding: 30px;
+    }
+
     .grille-produits {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -98,10 +111,17 @@
       width: 100%;
       height: 160px;
       object-fit: cover;
+      background: #eee;
     }
 
     .carte-produit-info {
       padding: 12px;
+    }
+
+    .carte-vendeur {
+      font-size: 0.75rem;
+      color: #0B6E6E;
+      margin: 0 0 4px;
     }
 
     .prix {
@@ -132,6 +152,7 @@
       padding: 20px;
       box-sizing: border-box;
       z-index: 100;
+      overflow-y: auto;
     }
 
     .panneau-panier.ouvert {
@@ -166,61 +187,118 @@
       cursor: pointer;
       float: right;
     }
+
+    #btn-commander {
+      width: 100%;
+      background: #D6336C;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+
+    /* ===== Overlay + Modal commande ===== */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 90;
+    }
+
+    .overlay.visible {
+      display: block;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 10px;
+      padding: 24px;
+      width: 90%;
+      max-width: 380px;
+      z-index: 110;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal.ouvert {
+      display: block;
+    }
+
+    .modal h3 {
+      margin-top: 0;
+    }
+
+    .modal label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
+
+    .modal button[type="submit"] {
+      width: 100%;
+      background: #16213E;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #fermer-modal {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      float: right;
+    }
   </style>
 </head>
 <body>
 
   <header>
     <h2>MarketSenegal</h2>
-    <button id="btn-panier">🧺 Panier (<span id="panier-count">0</span>)</button>
+    <nav>
+      <a href="vendeur.html">Devenir vendeur</a>
+      <button id="btn-panier">🧺 Panier (<span id="panier-count">0</span>)</button>
+    </nav>
   </header>
 
   <section class="hero">
     <h1>Le marché sénégalais, dans ta poche</h1>
-    <p>Trouve tout ce qu'on vend au Sénégal, et fais-toi livrer.</p>
+    <p>Trouve tout ce qu'on vend, où que tu sois, et fais-toi livrer.</p>
   </section>
 
   <div class="toolbar">
     <input type="search" id="recherche" placeholder="Chercher un produit... (ex: parfum, robe, riz)">
-    <div class="categories">
-      <button class="chip active">Tous</button>
-      <button class="chip">Alimentation</button>
-      <button class="chip">Vêtements</button>
-      <button class="chip">Parfums</button>
-      <button class="chip">Électronique</button>
+    <div class="categories" id="categories">
+      <button class="chip active" data-cat="tous">Tous</button>
     </div>
   </div>
 
-  <div class="grille-produits">
-
-    <div class="carte-produit" data-nom="Sac de riz 25kg" data-prix="12500">
-      <img src="https://placehold.co/300x200?text=Riz" alt="Riz">
-      <div class="carte-produit-info">
-        <p>Sac de riz 25kg</p>
-        <p class="prix">12 500 F CFA</p>
-        <button class="btn-ajouter">Ajouter</button>
-      </div>
-    </div>
-
-    <div class="carte-produit" data-nom="Chaussures homme" data-prix="8000">
-      <img src="https://placehold.co/300x200?text=Chaussures" alt="Chaussures">
-      <div class="carte-produit-info">
-        <p>Chaussures homme</p>
-        <p class="prix">8 000 F CFA</p>
-        <button class="btn-ajouter">Ajouter</button>
-      </div>
-    </div>
-
-    <div class="carte-produit" data-nom="Téléphone Android" data-prix="65000">
-      <img src="https://placehold.co/300x200?text=Telephone" alt="Téléphone">
-      <div class="carte-produit-info">
-        <p>Téléphone Android</p>
-        <p class="prix">65 000 F CFA</p>
-        <button class="btn-ajouter">Ajouter</button>
-      </div>
-    </div>
-
-  </div>
+  <p class="etat" id="etat-chargement">Chargement des produits...</p>
+  <div class="grille-produits" id="grille-produits"></div>
 
   <!-- Panneau panier -->
   <div class="panneau-panier" id="panneau-panier">
@@ -231,6 +309,30 @@
       <span>Total</span>
       <span id="panier-total">0 F CFA</span>
     </div>
+    <button id="btn-commander">Commander</button>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Modal commande -->
+  <div class="modal" id="modal-commande">
+    <button id="fermer-modal">✕</button>
+    <h3>Finaliser la commande</h3>
+    <form id="form-commande">
+      <label>Nom complet
+        <input type="text" name="nom" required>
+      </label>
+      <label>Téléphone
+        <input type="tel" name="telephone" placeholder="ex: 221771234567" required>
+      </label>
+      <label>Ville / Pays
+        <input type="text" name="ville" required>
+      </label>
+      <label>Quartier / adresse
+        <input type="text" name="adresse" required>
+      </label>
+      <button type="submit">Envoyer la commande</button>
+    </form>
   </div>
 
   <!-- Firebase -->
@@ -240,43 +342,218 @@
   <script src="js/firebase-config.js"></script>
 
   <script>
+    let TOUS_LES_PRODUITS = [];
+    let categorieActive = "tous";
+    let termeRecherche = "";
     let panier = [];
 
+    const grille = document.getElementById("grille-produits");
+    const etatChargement = document.getElementById("etat-chargement");
+    const zoneCategories = document.getElementById("categories");
+    const champRecherche = document.getElementById("recherche");
     const panneauPanier = document.getElementById("panneau-panier");
-    const listePanier = document.getElementById("liste-panier");
-    const panierCount = document.getElementById("panier-count");
-    const panierTotal = document.getElementById("panier-total");
+    const overlay = document.getElementById("overlay");
+    const listePanierEl = document.getElementById("liste-panier");
+    const panierTotalEl = document.getElementById("panier-total");
+    const panierCountEl = document.getElementById("panier-count");
+    const modalCommande = document.getElementById("modal-commande");
 
-    document.getElementById("btn-panier").addEventListener("click", () => {
-      panneauPanier.classList.add("ouvert");
-    });
+    function formatFCFA(montant) {
+      return Number(montant).toLocaleString("fr-FR") + " F CFA";
+    }
 
-    document.getElementById("fermer-panier").addEventListener("click", () => {
-      panneauPanier.classList.remove("ouvert");
-    });
+    // Charger les produits depuis Firestore, en temps réel
+    db.collection("produits").orderBy("dateAjout", "desc").onSnapshot(
+      (snapshot) => {
+        TOUS_LES_PRODUITS = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        construireCategories();
+        afficherProduits();
+        etatChargement.style.display = "none";
+      },
+      (erreur) => {
+        console.error(erreur);
+        etatChargement.textContent = "Erreur de chargement. Vérifie ta configuration Firebase.";
+      }
+    );
 
-    document.querySelectorAll(".btn-ajouter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const carte = btn.closest(".carte-produit");
-        const nom = carte.dataset.nom;
-        const prix = Number(carte.dataset.prix);
-        panier.push({ nom, prix });
-        afficherPanier();
-        panneauPanier.classList.add("ouvert");
+    function construireCategories() {
+      const categories = ["tous", ...new Set(TOUS_LES_PRODUITS.map((p) => p.categorie).filter(Boolean))];
+      zoneCategories.innerHTML = categories
+        .map((c) => `<button class="chip ${c === categorieActive ? "active" : ""}" data-cat="${c}">${c === "tous" ? "Tous" : c}</button>`)
+        .join("");
+      zoneCategories.querySelectorAll(".chip").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          categorieActive = btn.dataset.cat;
+          construireCategories();
+          afficherProduits();
+        });
       });
+    }
+
+    function afficherProduits() {
+      let produits = TOUS_LES_PRODUITS;
+      if (categorieActive !== "tous") {
+        produits = produits.filter((p) => p.categorie === categorieActive);
+      }
+      if (termeRecherche.trim()) {
+        const t = termeRecherche.toLowerCase();
+        produits = produits.filter((p) => p.nom.toLowerCase().includes(t));
+      }
+
+      if (produits.length === 0) {
+        grille.innerHTML = `<p class="etat">Aucun produit trouvé.</p>`;
+        return;
+      }
+
+      grille.innerHTML = produits
+        .map(
+          (p) => `
+        <div class="carte-produit">
+          <img src="${p.image}" alt="${p.nom}" loading="lazy">
+          <div class="carte-produit-info">
+            <p class="carte-vendeur">${p.nomVendeur || "Vendeur"}</p>
+            <p>${p.nom}</p>
+            <p class="prix">${formatFCFA(p.prix)}</p>
+            <button class="btn-ajouter" data-id="${p.id}">Ajouter</button>
+          </div>
+        </div>`
+        )
+        .join("");
+
+      grille.querySelectorAll(".btn-ajouter").forEach((btn) => {
+        btn.addEventListener("click", () => ajouterAuPanier(btn.dataset.id));
+      });
+    }
+
+    champRecherche.addEventListener("input", (e) => {
+      termeRecherche = e.target.value;
+      afficherProduits();
     });
+
+    // ===== Panier =====
+    function ajouterAuPanier(id) {
+      const produit = TOUS_LES_PRODUITS.find((p) => p.id === id);
+      if (!produit) return;
+      const ligne = panier.find((l) => l.id === id);
+      if (ligne) {
+        ligne.quantite += 1;
+      } else {
+        panier.push({
+          id,
+          nom: produit.nom,
+          prix: Number(produit.prix),
+          nomVendeur: produit.nomVendeur,
+          whatsappVendeur: produit.whatsappVendeur,
+          quantite: 1,
+        });
+      }
+      afficherPanier();
+      ouvrirPanier();
+    }
 
     function afficherPanier() {
-      panierCount.textContent = panier.length;
-      listePanier.innerHTML = panier.map(p => `
-        <div class="ligne-panier">
-          <span>${p.nom}</span>
-          <span>${p.prix.toLocaleString("fr-FR")} F CFA</span>
-        </div>
-      `).join("");
-      const total = panier.reduce((s, p) => s + p.prix, 0);
-      panierTotal.textContent = total.toLocaleString("fr-FR") + " F CFA";
+      const totalArticles = panier.reduce((s, l) => s + l.quantite, 0);
+      panierCountEl.textContent = totalArticles;
+
+      if (panier.length === 0) {
+        listePanierEl.innerHTML = `<p class="etat">Ton panier est vide.</p>`;
+      } else {
+        listePanierEl.innerHTML = panier
+          .map(
+            (l) => `
+          <div class="ligne-panier">
+            <span>${l.quantite}x ${l.nom}</span>
+            <strong>${formatFCFA(l.prix * l.quantite)}</strong>
+          </div>`
+          )
+          .join("");
+      }
+
+      const total = panier.reduce((s, l) => s + l.prix * l.quantite, 0);
+      panierTotalEl.textContent = formatFCFA(total);
     }
+
+    function ouvrirPanier() {
+      panneauPanier.classList.add("ouvert");
+      overlay.classList.add("visible");
+    }
+    function fermerPanier() {
+      panneauPanier.classList.remove("ouvert");
+      overlay.classList.remove("visible");
+    }
+
+    document.getElementById("btn-panier").addEventListener("click", ouvrirPanier);
+    document.getElementById("fermer-panier").addEventListener("click", fermerPanier);
+    overlay.addEventListener("click", () => {
+      fermerPanier();
+      fermerModal();
+    });
+
+    // ===== Commande =====
+    document.getElementById("btn-commander").addEventListener("click", () => {
+      if (panier.length === 0) return;
+      modalCommande.classList.add("ouvert");
+      overlay.classList.add("visible");
+    });
+    document.getElementById("fermer-modal").addEventListener("click", fermerModal);
+    function fermerModal() {
+      modalCommande.classList.remove("ouvert");
+    }
+
+    document.getElementById("form-commande").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+
+      const client = {
+        nom: form.nom.value,
+        telephone: form.telephone.value,
+        ville: form.ville.value,
+        adresse: form.adresse.value,
+      };
+      const total = panier.reduce((s, l) => s + l.prix * l.quantite, 0);
+
+      try {
+        // Enregistrer la commande complète dans Firestore
+        await db.collection("commandes").add({
+          client,
+          articles: panier,
+          total,
+          statut: "en attente",
+          dateCommande: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        // Regrouper les articles par vendeur pour notifier chacun séparément
+        const parVendeur = {};
+        panier.forEach((l) => {
+          const cle = l.whatsappVendeur || "inconnu";
+          if (!parVendeur[cle]) parVendeur[cle] = { nomVendeur: l.nomVendeur, articles: [] };
+          parVendeur[cle].articles.push(l);
+        });
+
+        Object.entries(parVendeur).forEach(([whatsapp, groupe]) => {
+          if (whatsapp === "inconnu") return;
+          const recap = groupe.articles.map((l) => `- ${l.quantite}x ${l.nom} (${formatFCFA(l.prix)})`).join("\n");
+          const sousTotal = groupe.articles.reduce((s, l) => s + l.prix * l.quantite, 0);
+          const message =
+            `Nouvelle commande MarketSenegal\n` +
+            `Client: ${client.nom} (${client.telephone})\n` +
+            `Livraison: ${client.adresse}, ${client.ville}\n\n` +
+            `Articles:\n${recap}\n\n` +
+            `Sous-total: ${formatFCFA(sousTotal)}`;
+          window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, "_blank");
+        });
+
+        panier = [];
+        afficherPanier();
+        form.reset();
+        fermerModal();
+        fermerPanier();
+        alert("Commande envoyée !");
+      } catch (err) {
+        console.error(err);
+        alert("Erreur lors de l'envoi de la commande.");
+      }
+    });
   </script>
 
 </body>
