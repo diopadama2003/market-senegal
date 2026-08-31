@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketSenegal — Mon espace</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #FAF6EE;
+      color: #222;
+    }
+
+    header {
+      background: #16213E;
+      color: white;
+      padding: 15px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    #btn-deconnexion {
+      background: none;
+      border: 1px solid white;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .conteneur {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 0 16px;
+    }
+
+    .carte {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 9px;
+      margin-top: 4px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+      font-family: Arial, sans-serif;
+    }
+
+    button {
+      background: #16213E;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .message {
+      font-size: 0.9rem;
+      font-weight: bold;
+      min-height: 20px;
+    }
+
+    .produit-ligne {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+
+    .produit-ligne button {
+      background: #D6336C;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html">MarketSenegal</a>
+    <button id="btn-deconnexion">Se déconnecter</button>
+  </header>
+
+  <div class="conteneur">
+
+    <div class="carte">
+      <h2>Ajouter un produit</h2>
+      <form id="form-produit">
+        <label>Nom du produit
+          <input type="text" name="nom" required>
+        </label>
+        <label>Prix (F CFA)
+          <input type="number" name="prix" required min="0">
+        </label>
+        <label>Catégorie
+          <input type="text" name="categorie" required placeholder="Alimentation, Vêtements, Parfums...">
+        </label>
+        <label>Lien de l'image (URL)
+          <input type="url" name="image" required placeholder="https://...">
+        </label>
+        <button type="submit">Publier le produit</button>
+      </form>
+      <p class="message" id="message-produit"></p>
+    </div>
+
+    <div class="carte">
+      <h2>Mes produits</h2>
+      <div id="liste-mes-produits">Chargement...</div>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    let vendeurConnecte = null;
+
+    // Vérifie que le vendeur est bien connecté, sinon renvoie vers vendeur.html
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "vendeur.html";
+      } else {
+        vendeurConnecte = user;
+        chargerMesProduits();
+      }
+    });
+
+    document.getElementById("btn-deconnexion").addEventListener("click", () => {
+      auth.signOut().then(() => (window.location.href = "vendeur.html"));
+    });
+
+    // Ajouter un produit
+    document.getElementById("form-produit").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const messageEl = document.getElementById("message-produit");
+      messageEl.style.color = "#222";
+      messageEl.textContent = "Publication...";
+
+      try {
+        // On récupère les infos du vendeur (nom + whatsapp) pour les copier sur le produit
+        const vendeurDoc = await db.collection("vendeurs").doc(vendeurConnecte.uid).get();
+        const vendeurData = vendeurDoc.data();
+
+        await db.collection("produits").add({
+          nom: form.nom.value,
+          prix: Number(form.prix.value),
+          categorie: form.categorie.value,
+          image: form.image.value,
+          vendeurId: vendeurConnecte.uid,
+          nomVendeur: vendeurData.nomVendeur,
+          whatsappVendeur: vendeurData.whatsapp,
+          dateAjout: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        messageEl.style.color = "green";
+        messageEl.textContent = "Produit publié !";
+        form.reset();
+      } catch (err) {
+        console.error(err);
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Erreur : " + err.message;
+      }
+    });
+
+    // Afficher les produits du vendeur connecté
+    function chargerMesProduits() {
+      db.collection("produits")
+        .where("vendeurId", "==", vendeurConnecte.uid)
+        .onSnapshot((snapshot) => {
+          const liste = document.getElementById("liste-mes-produits");
+          if (snapshot.empty) {
+            liste.innerHTML = "<p>Tu n'as pas encore ajouté de produit.</p>";
+            return;
+          }
+          liste.innerHTML = snapshot.docs
+            .map((doc) => {
+              const p = doc.data();
+              return `
+              <div class="produit-ligne">
+                <span>${p.nom} — ${Number(p.prix).toLocaleString("fr-FR")} F CFA</span>
+                <button data-id="${doc.id}">Supprimer</button>
+              </div>`;
+            })
+            .join("");
+
+          liste.querySelectorAll("button[data-id]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              if (confirm("Supprimer ce produit ?")) {
+                await db.collection("produits").doc(btn.dataset.id).delete();
+              }
+            });
+          });
+        });
+    }
+  </script>
+
+</body>
+</html>
