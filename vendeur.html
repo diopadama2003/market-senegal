@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketSenegal — Espace vendeur</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #FAF6EE;
+      color: #222;
+    }
+
+    header {
+      background: #16213E;
+      color: white;
+      padding: 15px 25px;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .conteneur {
+      max-width: 420px;
+      margin: 40px auto;
+      background: white;
+      padding: 24px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+
+    input {
+      width: 100%;
+      padding: 9px;
+      margin-top: 4px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
+
+    button {
+      width: 100%;
+      background: #16213E;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .lien-bascule {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 0.9rem;
+    }
+
+    .lien-bascule a {
+      color: #D6336C;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .message {
+      font-size: 0.9rem;
+      font-weight: bold;
+      min-height: 20px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="index.html">MarketSenegal</a>
+  </header>
+
+  <div class="conteneur">
+
+    <!-- Formulaire d'inscription -->
+    <div id="bloc-inscription">
+      <h2>Devenir vendeur</h2>
+      <form id="form-inscription">
+        <label>Nom de la boutique / vendeur
+          <input type="text" name="nomVendeur" required>
+        </label>
+        <label>Email
+          <input type="email" name="email" required>
+        </label>
+        <label>Mot de passe (6 caractères minimum)
+          <input type="password" name="motdepasse" required minlength="6">
+        </label>
+        <label>Numéro WhatsApp (avec indicatif pays, ex: 221771234567 ou 33612345678)
+          <input type="text" name="whatsapp" required placeholder="221771234567">
+        </label>
+        <button type="submit">Créer mon compte vendeur</button>
+      </form>
+      <p class="message" id="message-inscription"></p>
+      <p class="lien-bascule">Déjà vendeur ? <a id="vers-connexion">Se connecter</a></p>
+    </div>
+
+    <!-- Formulaire de connexion -->
+    <div id="bloc-connexion" style="display:none;">
+      <h2>Connexion vendeur</h2>
+      <form id="form-connexion">
+        <label>Email
+          <input type="email" name="email" required>
+        </label>
+        <label>Mot de passe
+          <input type="password" name="motdepasse" required>
+        </label>
+        <button type="submit">Se connecter</button>
+      </form>
+      <p class="message" id="message-connexion"></p>
+      <p class="lien-bascule">Pas encore de compte ? <a id="vers-inscription">Devenir vendeur</a></p>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+
+  <script>
+    const blocInscription = document.getElementById("bloc-inscription");
+    const blocConnexion = document.getElementById("bloc-connexion");
+
+    document.getElementById("vers-connexion").addEventListener("click", () => {
+      blocInscription.style.display = "none";
+      blocConnexion.style.display = "block";
+    });
+    document.getElementById("vers-inscription").addEventListener("click", () => {
+      blocConnexion.style.display = "none";
+      blocInscription.style.display = "block";
+    });
+
+    // Inscription
+    document.getElementById("form-inscription").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const messageEl = document.getElementById("message-inscription");
+      messageEl.style.color = "#222";
+      messageEl.textContent = "Création du compte...";
+
+      try {
+        const resultat = await auth.createUserWithEmailAndPassword(form.email.value, form.motdepasse.value);
+        await db.collection("vendeurs").doc(resultat.user.uid).set({
+          nomVendeur: form.nomVendeur.value,
+          email: form.email.value,
+          whatsapp: form.whatsapp.value,
+          dateInscription: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        messageEl.style.color = "green";
+        messageEl.textContent = "Compte créé ! Redirection...";
+        setTimeout(() => (window.location.href = "espace-vendeur.html"), 1000);
+      } catch (err) {
+        console.error(err);
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Erreur : " + err.message;
+      }
+    });
+
+    // Connexion
+    document.getElementById("form-connexion").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const messageEl = document.getElementById("message-connexion");
+      messageEl.style.color = "#222";
+      messageEl.textContent = "Connexion...";
+
+      try {
+        await auth.signInWithEmailAndPassword(form.email.value, form.motdepasse.value);
+        window.location.href = "espace-vendeur.html";
+      } catch (err) {
+        console.error(err);
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Email ou mot de passe incorrect.";
+      }
+    });
+  </script>
+
+</body>
+</html>
