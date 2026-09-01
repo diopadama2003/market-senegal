@@ -188,17 +188,46 @@
         document.querySelector(".carte").innerHTML = `
           <h2>Compte en attente</h2>
           <p>Ton compte est en attente de validation par l'administrateur.
-          Tu recevras un email avec un code dès que ton compte sera accepté.</p>
+          Tu recevras un email avec un code dès que ton compte sera accepté.
+          Reviens sur cette page et actualise-la à ce moment-là.</p>
+          <button id="btn-actualiser">Actualiser</button>
         `;
+        document.getElementById("btn-actualiser").addEventListener("click", () => location.reload());
         return;
       }
 
       if (statut === "code_envoye") {
         document.querySelector(".carte").innerHTML = `
           <h2>Confirme ton compte</h2>
-          <p>Un code de confirmation t'a été envoyé par email.</p>
-          <a href="confirmer.html"><button type="button">Entrer mon code</button></a>
+          <p>Un code de confirmation à 6 chiffres t'a été envoyé par email. Entre-le ici :</p>
+          <form id="form-code">
+            <label>Code de confirmation
+              <input type="text" name="code" required maxlength="6">
+            </label>
+            <button type="submit">Confirmer</button>
+          </form>
+          <p class="message" id="message-code"></p>
         `;
+        document.getElementById("form-code").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const codeSaisi = e.target.code.value.trim();
+          const messageEl = document.getElementById("message-code");
+
+          if (codeSaisi !== data.codeConfirmation) {
+            messageEl.style.color = "#D6336C";
+            messageEl.textContent = "Code incorrect.";
+            return;
+          }
+
+          await db.collection("vendeurs").doc(user.uid).update({
+            statut: "valide",
+            codeConfirmation: firebase.firestore.FieldValue.delete(),
+          });
+
+          messageEl.style.color = "green";
+          messageEl.textContent = "Compte confirmé !";
+          setTimeout(() => location.reload(), 1000);
+        });
         return;
       }
 
