@@ -4,56 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MarketSenegal — Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #FAF6EE;
-      color: #222;
-    }
-
-    header {
-      background: #16213E;
-      color: white;
-      padding: 15px 25px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
+    body { margin: 0; font-family: Arial, sans-serif; background: #FAF6EE; color: #222; }
+    header { background: #16213E; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
     header a { color: white; text-decoration: none; font-weight: bold; font-size: 1.2rem; }
-    #btn-deconnexion {
-      background: none; border: 1px solid white; color: white;
-      padding: 6px 12px; border-radius: 20px; cursor: pointer;
-    }
-
+    #btn-deconnexion { background: none; border: 1px solid white; color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
     .conteneur { max-width: 600px; margin: 30px auto; padding: 0 16px; }
-
-    .carte {
-      background: white; padding: 20px; border-radius: 10px;
-      border: 1px solid #ddd; margin-bottom: 20px; max-width: 380px;
-    }
-
+    .carte { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; max-width: 380px; }
     label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 14px; }
-    input {
-      width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #ddd;
-      border-radius: 6px; box-sizing: border-box; font-size: 0.95rem;
-    }
-    button {
-      background: #16213E; color: white; border: none; padding: 10px 16px;
-      border-radius: 8px; font-weight: bold; cursor: pointer;
-    }
+    input { width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; }
+    button { background: #16213E; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .message { font-size: 0.9rem; font-weight: bold; min-height: 20px; }
-
     .titre-section { margin-top: 30px; }
-
-    .ligne {
-      background: white; border: 1px solid #ddd; border-radius: 8px;
-      padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-
+    .ligne { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
     .ligne button { background: #D6336C; padding: 5px 10px; font-size: 0.8rem; }
+    .ligne button.accepter { background: #0B6E6E; }
+    .statut-attente { color: #D98A0E; font-weight: bold; }
+    .statut-valide { color: green; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -65,7 +33,6 @@
 
   <div class="conteneur">
 
-    <!-- Connexion admin -->
     <div id="bloc-connexion" class="carte">
       <h2>Connexion admin</h2>
       <form id="form-connexion">
@@ -80,11 +47,11 @@
       <p class="message" id="message-connexion"></p>
     </div>
 
-    <!-- Contenu admin -->
     <div id="bloc-admin" style="display:none;">
       <h2>Tableau de bord</h2>
+      <p id="message-action" class="message"></p>
 
-      <h3 class="titre-section">Vendeurs inscrits (<span id="nb-vendeurs">0</span>)</h3>
+      <h3 class="titre-section">Vendeurs (<span id="nb-vendeurs">0</span>)</h3>
       <div id="liste-vendeurs"></div>
 
       <h3 class="titre-section">Produits publiés (<span id="nb-produits">0</span>)</h3>
@@ -93,13 +60,14 @@
 
   </div>
 
-  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="js/firebase-config.js"></script>
 
   <script>
+    emailjs.init("tulYYMgHIeGkicpqU");
+
     const blocConnexion = document.getElementById("bloc-connexion");
     const blocAdmin = document.getElementById("bloc-admin");
     const btnDeconnexion = document.getElementById("btn-deconnexion");
@@ -125,8 +93,8 @@
         btnDeconnexion.style.display = "inline-block";
         chargerVendeurs();
         chargerProduits();
+        verifierLienAcceptation();
       } else if (user && user.uid !== ADMIN_UID) {
-        // Connecté mais pas admin -> on le déconnecte
         alert("Ce compte n'est pas administrateur.");
         auth.signOut();
       } else {
@@ -135,6 +103,50 @@
         btnDeconnexion.style.display = "none";
       }
     });
+
+    // Si l'admin arrive via le lien "Accepter" dans l'email
+    function verifierLienAcceptation() {
+      const params = new URLSearchParams(window.location.search);
+      const uidAAccepter = params.get("accepter");
+      if (uidAAccepter) {
+        accepterVendeur(uidAAccepter);
+      }
+    }
+
+    async function accepterVendeur(uid) {
+      const messageEl = document.getElementById("message-action");
+      messageEl.style.color = "#222";
+      messageEl.textContent = "Validation en cours...";
+
+      try {
+        const doc = await db.collection("vendeurs").doc(uid).get();
+        if (!doc.exists) {
+          messageEl.style.color = "#D6336C";
+          messageEl.textContent = "Vendeur introuvable.";
+          return;
+        }
+        const data = doc.data();
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+
+        await db.collection("vendeurs").doc(uid).update({
+          statut: "code_envoye",
+          codeConfirmation: code,
+        });
+
+        await emailjs.send("service_wkkglfl", "template_k5wz66g", {
+          nom_vendeur: data.nomVendeur,
+          email_vendeur: data.email,
+          code: code,
+        });
+
+        messageEl.style.color = "green";
+        messageEl.textContent = `Vendeur "${data.nomVendeur}" accepté, code envoyé !`;
+      } catch (err) {
+        console.error(err);
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Erreur : " + err.message;
+      }
+    }
 
     function chargerVendeurs() {
       db.collection("vendeurs").onSnapshot((snapshot) => {
@@ -147,9 +159,24 @@
         liste.innerHTML = snapshot.docs
           .map((doc) => {
             const v = doc.data();
-            return `<div class="ligne"><span><strong>${v.nomVendeur || "?"}</strong> — ${v.email || ""} — ${v.whatsapp || ""}</span></div>`;
+            const statutTexte =
+              v.statut === "valide" ? '<span class="statut-valide">Validé</span>' :
+              v.statut === "code_envoye" ? '<span class="statut-attente">Code envoyé</span>' :
+              '<span class="statut-attente">En attente</span>';
+            const boutonAccepter =
+              v.statut === "en_attente"
+                ? `<button class="accepter" data-uid="${doc.id}">Accepter</button>`
+                : "";
+            return `<div class="ligne">
+              <span><strong>${v.nomVendeur || "?"}</strong> — ${v.email || ""} — ${statutTexte}</span>
+              ${boutonAccepter}
+            </div>`;
           })
           .join("");
+
+        liste.querySelectorAll("button.accepter").forEach((btn) => {
+          btn.addEventListener("click", () => accepterVendeur(btn.dataset.uid));
+        });
       });
     }
 
@@ -164,8 +191,7 @@
         liste.innerHTML = snapshot.docs
           .map((doc) => {
             const p = doc.data();
-            return `
-            <div class="ligne">
+            return `<div class="ligne">
               <span>${p.nom} — ${Number(p.prix).toLocaleString("fr-FR")} F CFA — <em>${p.nomVendeur || ""}</em></span>
               <button data-id="${doc.id}">Supprimer</button>
             </div>`;
