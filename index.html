@@ -147,6 +147,32 @@
       cursor: pointer;
     }
 
+    .boutons-produit {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .btn-commander-direct {
+      flex: 1;
+      background: #D6336C;
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .btn-ajouter {
+      background: #16213E;
+      color: white;
+      border: none;
+      padding: 8px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
     /* ===== Panier ===== */
     .panneau-panier {
       position: fixed;
@@ -387,6 +413,7 @@
     let categorieActive = "tous";
     let termeRecherche = "";
     let panier = [];
+    let articlesACommander = null;
 
     const grille = document.getElementById("grille-produits");
     const etatChargement = document.getElementById("etat-chargement");
@@ -456,7 +483,10 @@
             <p class="carte-vendeur">${p.nomVendeur || "Vendeur"}</p>
             <p>${p.nom}</p>
             <p class="prix">${formatFCFA(p.prix)}</p>
-            <button class="btn-ajouter" data-id="${p.id}">Ajouter</button>
+            <div class="boutons-produit">
+              <button class="btn-commander-direct" data-id="${p.id}">Commander</button>
+              <button class="btn-ajouter" data-id="${p.id}">🧺</button>
+            </div>
           </div>
         </div>`
         )
@@ -464,6 +494,10 @@
 
       grille.querySelectorAll(".btn-ajouter").forEach((btn) => {
         btn.addEventListener("click", () => ajouterAuPanier(btn.dataset.id));
+      });
+
+      grille.querySelectorAll(".btn-commander-direct").forEach((btn) => {
+        btn.addEventListener("click", () => commanderDirect(btn.dataset.id));
       });
 
       grille.querySelectorAll(".img-vendeur").forEach((img) => {
@@ -558,9 +592,26 @@
     // ===== Commande =====
     document.getElementById("btn-commander").addEventListener("click", () => {
       if (panier.length === 0) return;
+      articlesACommander = null; // on utilisera le panier
       modalCommande.classList.add("ouvert");
       overlay.classList.add("visible");
     });
+
+    function commanderDirect(id) {
+      const produit = TOUS_LES_PRODUITS.find((p) => p.id === id);
+      if (!produit) return;
+      articlesACommander = [{
+        id,
+        nom: produit.nom,
+        prix: Number(produit.prix),
+        nomVendeur: produit.nomVendeur,
+        whatsappVendeur: produit.whatsappVendeur,
+        quantite: 1,
+      }];
+      modalCommande.classList.add("ouvert");
+      overlay.classList.add("visible");
+    }
+
     document.getElementById("fermer-modal").addEventListener("click", fermerModal);
     function fermerModal() {
       modalCommande.classList.remove("ouvert");
@@ -570,25 +621,27 @@
       e.preventDefault();
       const form = e.target;
 
+      const articles = articlesACommander || panier;
+
       const client = {
         nom: form.nom.value,
         telephone: form.telephone.value,
         ville: form.ville.value,
         adresse: form.adresse.value,
       };
-      const total = panier.reduce((s, l) => s + l.prix * l.quantite, 0);
+      const total = articles.reduce((s, l) => s + l.prix * l.quantite, 0);
 
       try {
         await db.collection("commandes").add({
           client,
-          articles: panier,
+          articles,
           total,
           statut: "en attente",
           dateCommande: firebase.firestore.FieldValue.serverTimestamp(),
         });
 
         const parVendeur = {};
-        panier.forEach((l) => {
+        articles.forEach((l) => {
           const cle = l.whatsappVendeur || "inconnu";
           if (!parVendeur[cle]) parVendeur[cle] = { nomVendeur: l.nomVendeur, articles: [] };
           parVendeur[cle].articles.push(l);
@@ -607,8 +660,11 @@
           window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, "_blank");
         });
 
-        panier = [];
-        afficherPanier();
+        if (!articlesACommander) {
+          panier = [];
+          afficherPanier();
+        }
+        articlesACommander = null;
         form.reset();
         fermerModal();
         fermerPanier();
