@@ -173,23 +173,32 @@
 
     let vendeurConnecte = null;
 
-    auth.onAuthStateChanged((user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (!user) {
         window.location.href = "vendeur.html";
         return;
       }
       vendeurConnecte = user;
 
-      if (!user.emailVerified) {
+      const doc = await db.collection("vendeurs").doc(user.uid).get();
+      const data = doc.data();
+      const statut = data ? data.statut : "en_attente";
+
+      if (statut === "en_attente") {
         document.querySelector(".carte").innerHTML = `
-          <h2>Confirme ton email</h2>
-          <p>Un email de confirmation a été envoyé à <strong>${user.email}</strong>.
-          Clique sur le lien reçu, puis reviens ici et actualise la page pour pouvoir publier tes produits.</p>
-          <button id="btn-renvoyer">Renvoyer l'email de confirmation</button>
+          <h2>Compte en attente</h2>
+          <p>Ton compte est en attente de validation par l'administrateur.
+          Tu recevras un email avec un code dès que ton compte sera accepté.</p>
         `;
-        document.getElementById("btn-renvoyer").addEventListener("click", () => {
-          user.sendEmailVerification().then(() => alert("Email renvoyé !"));
-        });
+        return;
+      }
+
+      if (statut === "code_envoye") {
+        document.querySelector(".carte").innerHTML = `
+          <h2>Confirme ton compte</h2>
+          <p>Un code de confirmation t'a été envoyé par email.</p>
+          <a href="confirmer.html"><button type="button">Entrer mon code</button></a>
+        `;
         return;
       }
 
