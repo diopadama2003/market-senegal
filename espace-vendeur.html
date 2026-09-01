@@ -8,7 +8,9 @@
     body { margin: 0; font-family: Arial, sans-serif; background: #FAF6EE; color: #222; }
     header { background: #16213E; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
     header a { color: white; text-decoration: none; font-weight: bold; font-size: 1.2rem; }
-    .lien-boutique { color: white; text-decoration: none; margin-right: 12px; font-size: 0.9rem; font-weight: normal; }
+    .nav-liens { display: flex; gap: 16px; align-items: center; }
+    .nav-liens a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .nav-liens a:hover { text-decoration: underline; }
     #btn-deconnexion { background: none; border: 1px solid white; color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
     .conteneur { max-width: 500px; margin: 30px auto; padding: 0 16px; }
     .carte { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; }
@@ -26,10 +28,11 @@
 
   <header>
     <a href="index.html">MarketSenegal</a>
-    <div>
-      <a href="index.html" class="lien-boutique">🏠 Voir la boutique</a>
-      <button id="btn-deconnexion">Se déconnecter</button>
-    </div>
+    <nav class="nav-liens">
+      <a href="index.html">Accueil</a>
+      <a href="vendeur.html">Devenir vendeur</a>
+    </nav>
+    <button id="btn-deconnexion">Se déconnecter</button>
   </header>
 
   <div class="conteneur">
@@ -146,7 +149,6 @@
       auth.signOut().then(() => (window.location.href = "vendeur.html"));
     });
 
-    // Aperçu de la photo choisie
     const champImage = document.getElementById("champ-image");
     const apercuImage = document.getElementById("apercu-image");
     champImage.addEventListener("change", () => {
@@ -157,7 +159,6 @@
       }
     });
 
-    // Envoie la photo vers ImgBB et renvoie le lien direct
     async function envoyerPhoto(fichier) {
       const formData = new FormData();
       formData.append("image", fichier);
@@ -170,7 +171,6 @@
       return data.data.url;
     }
 
-    // Ajouter un produit
     document.getElementById("form-produit").addEventListener("submit", async (e) => {
       e.preventDefault();
       const form = e.target;
@@ -220,7 +220,6 @@
       }
     });
 
-    // Afficher les produits du vendeur connecté
     function chargerMesProduits() {
       db.collection("produits")
         .where("vendeurId", "==", vendeurConnecte.uid)

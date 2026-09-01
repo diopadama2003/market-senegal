@@ -21,15 +21,22 @@
       padding: 15px 25px;
     }
 
-    header nav a {
+    header h2 {
+      margin: 0;
+    }
+
+    .nav-liens {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .nav-liens a {
       color: white;
       text-decoration: none;
       font-size: 0.9rem;
-      margin-right: 16px;
     }
-
-    header h2 {
-      margin: 0;
+    .nav-liens a:hover {
+      text-decoration: underline;
     }
 
     header button {
@@ -279,10 +286,11 @@
 
   <header>
     <h2>MarketSenegal</h2>
-    <nav>
+    <nav class="nav-liens">
+      <a href="index.html">Accueil</a>
       <a href="vendeur.html">Devenir vendeur</a>
-      <button id="btn-panier">🧺 Panier (<span id="panier-count">0</span>)</button>
     </nav>
+    <button id="btn-panier">🧺 Panier (<span id="panier-count">0</span>)</button>
   </header>
 
   <section class="hero">
@@ -513,7 +521,6 @@
       const total = panier.reduce((s, l) => s + l.prix * l.quantite, 0);
 
       try {
-        // Enregistrer la commande complète dans Firestore
         await db.collection("commandes").add({
           client,
           articles: panier,
@@ -522,7 +529,6 @@
           dateCommande: firebase.firestore.FieldValue.serverTimestamp(),
         });
 
-        // Regrouper les articles par vendeur pour notifier chacun séparément
         const parVendeur = {};
         panier.forEach((l) => {
           const cle = l.whatsappVendeur || "inconnu";

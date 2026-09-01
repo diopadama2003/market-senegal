@@ -7,8 +7,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; background: #FAF6EE; color: #222; }
-    header { background: #16213E; color: white; padding: 15px 25px; }
+    header { background: #16213E; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
     header a { color: white; text-decoration: none; font-weight: bold; font-size: 1.2rem; }
+    .nav-liens { display: flex; gap: 16px; align-items: center; }
+    .nav-liens a { color: white; text-decoration: none; font-size: 0.9rem; }
+    .nav-liens a:hover { text-decoration: underline; }
     .conteneur { max-width: 420px; margin: 40px auto; background: white; padding: 24px; border-radius: 10px; border: 1px solid #ddd; }
     h2 { margin-top: 0; }
     label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 14px; }
@@ -23,6 +26,10 @@
 
   <header>
     <a href="index.html">MarketSenegal</a>
+    <nav class="nav-liens">
+      <a href="index.html">Accueil</a>
+      <a href="vendeur.html">Devenir vendeur</a>
+    </nav>
   </header>
 
   <div class="conteneur">
