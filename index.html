@@ -119,6 +119,7 @@
       height: 160px;
       object-fit: cover;
       background: #eee;
+      cursor: pointer;
     }
 
     .carte-produit-info {
@@ -280,6 +281,28 @@
       cursor: pointer;
       float: right;
     }
+
+    .modal-vendeur h3 {
+      margin-top: 0;
+    }
+    .modal-vendeur p {
+      margin: 8px 0;
+    }
+    .btn-contacter {
+      width: 100%;
+      background: #0B6E6E;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
@@ -343,6 +366,16 @@
     </form>
   </div>
 
+  <!-- Modal infos vendeur -->
+  <div class="modal" id="modal-vendeur">
+    <button id="fermer-modal-vendeur">✕</button>
+    <div class="modal-vendeur">
+      <h3 id="vendeur-nom"></h3>
+      <p id="vendeur-produit"></p>
+      <a href="#" id="vendeur-contacter" class="btn-contacter" target="_blank">Contacter sur WhatsApp</a>
+    </div>
+  </div>
+
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -365,6 +398,7 @@
     const panierTotalEl = document.getElementById("panier-total");
     const panierCountEl = document.getElementById("panier-count");
     const modalCommande = document.getElementById("modal-commande");
+    const modalVendeur = document.getElementById("modal-vendeur");
 
     function formatFCFA(montant) {
       return Number(montant).toLocaleString("fr-FR") + " F CFA";
@@ -417,7 +451,7 @@
         .map(
           (p) => `
         <div class="carte-produit">
-          <img src="${p.image}" alt="${p.nom}" loading="lazy">
+          <img src="${p.image}" alt="${p.nom}" loading="lazy" class="img-vendeur" data-id="${p.id}">
           <div class="carte-produit-info">
             <p class="carte-vendeur">${p.nomVendeur || "Vendeur"}</p>
             <p>${p.nom}</p>
@@ -431,7 +465,31 @@
       grille.querySelectorAll(".btn-ajouter").forEach((btn) => {
         btn.addEventListener("click", () => ajouterAuPanier(btn.dataset.id));
       });
+
+      grille.querySelectorAll(".img-vendeur").forEach((img) => {
+        img.addEventListener("click", () => ouvrirModalVendeur(img.dataset.id));
+      });
     }
+
+    function ouvrirModalVendeur(id) {
+      const produit = TOUS_LES_PRODUITS.find((p) => p.id === id);
+      if (!produit) return;
+
+      document.getElementById("vendeur-nom").textContent = produit.nomVendeur || "Vendeur";
+      document.getElementById("vendeur-produit").textContent = `Vend : ${produit.nom}`;
+
+      const texte = encodeURIComponent(`Bonjour, je suis intéressé(e) par votre produit "${produit.nom}" sur MarketSenegal.`);
+      const lien = `https://wa.me/${produit.whatsappVendeur}?text=${texte}`;
+      document.getElementById("vendeur-contacter").href = lien;
+
+      modalVendeur.classList.add("ouvert");
+      overlay.classList.add("visible");
+    }
+
+    document.getElementById("fermer-modal-vendeur").addEventListener("click", () => {
+      modalVendeur.classList.remove("ouvert");
+      overlay.classList.remove("visible");
+    });
 
     champRecherche.addEventListener("input", (e) => {
       termeRecherche = e.target.value;
