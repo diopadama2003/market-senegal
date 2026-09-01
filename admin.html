@@ -17,11 +17,13 @@
     button { background: #16213E; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .message { font-size: 0.9rem; font-weight: bold; min-height: 20px; }
     .titre-section { margin-top: 30px; }
-    .ligne { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .ligne { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
     .ligne button { background: #D6336C; padding: 5px 10px; font-size: 0.8rem; }
     .ligne button.accepter { background: #0B6E6E; }
+    .ligne button.refuser { background: #888; }
     .statut-attente { color: #D98A0E; font-weight: bold; }
     .statut-valide { color: green; font-weight: bold; }
+    .statut-refuse { color: #D6336C; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -104,7 +106,6 @@
       }
     });
 
-    // Si l'admin arrive via le lien "Accepter" dans l'email
     function verifierLienAcceptation() {
       const params = new URLSearchParams(window.location.search);
       const uidAAccepter = params.get("accepter");
@@ -148,6 +149,20 @@
       }
     }
 
+    async function refuserVendeur(uid) {
+      if (!confirm("Refuser ce vendeur ? Il ne pourra pas publier de produits.")) return;
+      const messageEl = document.getElementById("message-action");
+      try {
+        await db.collection("vendeurs").doc(uid).update({ statut: "refuse" });
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Vendeur refusé.";
+      } catch (err) {
+        console.error(err);
+        messageEl.style.color = "#D6336C";
+        messageEl.textContent = "Erreur : " + err.message;
+      }
+    }
+
     function chargerVendeurs() {
       db.collection("vendeurs").onSnapshot((snapshot) => {
         document.getElementById("nb-vendeurs").textContent = snapshot.size;
@@ -162,20 +177,25 @@
             const statutTexte =
               v.statut === "valide" ? '<span class="statut-valide">Validé</span>' :
               v.statut === "code_envoye" ? '<span class="statut-attente">Code envoyé</span>' :
+              v.statut === "refuse" ? '<span class="statut-refuse">Refusé</span>' :
               '<span class="statut-attente">En attente</span>';
-            const boutonAccepter =
+            const boutons =
               v.statut === "en_attente"
-                ? `<button class="accepter" data-uid="${doc.id}">Accepter</button>`
+                ? `<button class="accepter" data-uid="${doc.id}">Accepter</button>
+                   <button class="refuser" data-uid="${doc.id}">Refuser</button>`
                 : "";
             return `<div class="ligne">
               <span><strong>${v.nomVendeur || "?"}</strong> — ${v.email || ""} — ${statutTexte}</span>
-              ${boutonAccepter}
+              ${boutons}
             </div>`;
           })
           .join("");
 
         liste.querySelectorAll("button.accepter").forEach((btn) => {
           btn.addEventListener("click", () => accepterVendeur(btn.dataset.uid));
+        });
+        liste.querySelectorAll("button.refuser").forEach((btn) => {
+          btn.addEventListener("click", () => refuserVendeur(btn.dataset.uid));
         });
       });
     }
