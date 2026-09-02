@@ -22,6 +22,33 @@
     .apercu-image { max-width: 120px; max-height: 120px; border-radius: 8px; margin-top: 8px; display: none; }
     .produit-ligne { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
     .produit-ligne button { background: #D6336C; padding: 5px 10px; font-size: 0.8rem; }
+    .carte-commande {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+    .carte-commande .entete {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .carte-commande ul {
+      margin: 6px 0;
+      padding-left: 18px;
+    }
+    .badge-statut {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: #FEEBC8;
+      color: #975A16;
+    }
   </style>
 </head>
 <body>
@@ -61,6 +88,11 @@
     <div class="carte">
       <h2>Mes produits</h2>
       <div id="liste-mes-produits">Chargement...</div>
+    </div>
+
+    <div class="carte">
+      <h2>Mes commandes</h2>
+      <div id="liste-mes-commandes">Chargement...</div>
     </div>
 
   </div>
@@ -143,6 +175,7 @@
       }
 
       chargerMesProduits();
+      chargerMesCommandes();
     });
 
     document.getElementById("btn-deconnexion").addEventListener("click", () => {
@@ -247,6 +280,37 @@
               }
             });
           });
+        });
+    }
+
+    function chargerMesCommandes() {
+      db.collection("commandes")
+        .where("vendeurIds", "array-contains", vendeurConnecte.uid)
+        .orderBy("dateCommande", "desc")
+        .onSnapshot((snapshot) => {
+          const liste = document.getElementById("liste-mes-commandes");
+          if (snapshot.empty) {
+            liste.innerHTML = "<p>Aucune commande pour l'instant.</p>";
+            return;
+          }
+          liste.innerHTML = snapshot.docs
+            .map((doc) => {
+              const c = doc.data();
+              const mesArticles = (c.articles || []).filter((a) => a.vendeurId === vendeurConnecte.uid);
+              const items = mesArticles.map((a) => `<li>${a.quantite}x ${a.nom}</li>`).join("");
+              const sousTotal = mesArticles.reduce((s, a) => s + a.prix * a.quantite, 0);
+              return `
+              <div class="carte-commande">
+                <div class="entete">
+                  <span>${c.client?.nom || "Client"} — ${c.client?.telephone || ""}</span>
+                  <span>${sousTotal.toLocaleString("fr-FR")} F CFA</span>
+                </div>
+                <div>Livraison : ${c.client?.adresse || ""}, ${c.client?.ville || ""}</div>
+                <ul>${items}</ul>
+                <span class="badge-statut">${c.statut || "en attente"}</span>
+              </div>`;
+            })
+            .join("");
         });
     }
   </script>
