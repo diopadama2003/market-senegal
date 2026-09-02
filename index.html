@@ -626,6 +626,7 @@
           prix: Number(produit.prix),
           nomVendeur: produit.nomVendeur,
           whatsappVendeur: produit.whatsappVendeur,
+          vendeurId: produit.vendeurId,
           quantite: 1,
         });
       }
@@ -689,6 +690,7 @@
         prix: Number(produit.prix),
         nomVendeur: produit.nomVendeur,
         whatsappVendeur: produit.whatsappVendeur,
+        vendeurId: produit.vendeurId,
         quantite: 1,
       }];
       modalCommande.classList.add("ouvert");
@@ -715,10 +717,13 @@
       const total = articles.reduce((s, l) => s + l.prix * l.quantite, 0);
 
       try {
+        const vendeurIds = [...new Set(articles.map((a) => a.vendeurId).filter(Boolean))];
+
         await db.collection("commandes").add({
           client,
           articles,
           total,
+          vendeurIds,
           statut: "en attente",
           dateCommande: firebase.firestore.FieldValue.serverTimestamp(),
         });
