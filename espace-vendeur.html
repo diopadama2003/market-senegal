@@ -311,6 +311,10 @@
               </div>`;
             })
             .join("");
+        }, (erreur) => {
+          console.error(erreur);
+          document.getElementById("liste-mes-commandes").innerHTML =
+            `<p style="color:#D6336C;">Erreur : ${erreur.message}</p>`;
         });
     }
   </script>
