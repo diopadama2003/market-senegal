@@ -13,20 +13,91 @@
     .nav-liens a { color: white; text-decoration: none; font-size: 0.9rem; }
     .nav-liens a:hover { text-decoration: underline; }
     #btn-deconnexion { background: none; border: 1px solid white; color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
-    .conteneur { max-width: 600px; margin: 30px auto; padding: 0 16px; }
+    .conteneur { max-width: 900px; margin: 30px auto; padding: 0 16px; }
     .carte { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; max-width: 380px; }
     label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 14px; }
     input { width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; }
     button { background: #16213E; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .message { font-size: 0.9rem; font-weight: bold; min-height: 20px; }
-    .titre-section { margin-top: 30px; }
-    .ligne { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .ligne button { background: #D6336C; padding: 5px 10px; font-size: 0.8rem; }
-    .ligne button.accepter { background: #0B6E6E; }
-    .ligne button.refuser { background: #888; }
-    .statut-attente { color: #D98A0E; font-weight: bold; }
-    .statut-valide { color: green; font-weight: bold; }
-    .statut-refuse { color: #D6336C; font-weight: bold; }
+
+    .titre-section {
+      margin-top: 34px;
+      margin-bottom: 10px;
+      font-size: 1.2rem;
+    }
+
+    .tableau-wrap {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    thead th {
+      text-align: left;
+      background: #F0EBDD;
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #555;
+      border-bottom: 1px solid #ddd;
+    }
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+    tbody tr:hover {
+      background: #FBF8F1;
+    }
+
+    .btn-petit {
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    .btn-supprimer { background: #D6336C; }
+    .btn-accepter { background: #0B6E6E; margin-right: 4px; }
+    .btn-refuser { background: #888; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: bold;
+      padding: 3px 9px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+    .badge-attente { background: #FEEBC8; color: #975A16; }
+    .badge-valide { background: #C6F6D5; color: #22543D; }
+    .badge-refuse { background: #FED7D7; color: #822727; }
+
+    .statut-select {
+      padding: 5px 6px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      font-size: 0.82rem;
+    }
+
+    .liste-articles {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .vide {
+      padding: 16px;
+      color: #888;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -61,10 +132,52 @@
       <p id="message-action" class="message"></p>
 
       <h3 class="titre-section">Vendeurs (<span id="nb-vendeurs">0</span>)</h3>
-      <div id="liste-vendeurs"></div>
+      <div class="tableau-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Boutique</th>
+              <th>Email</th>
+              <th>WhatsApp</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="corps-vendeurs"></tbody>
+        </table>
+      </div>
 
       <h3 class="titre-section">Produits publiés (<span id="nb-produits">0</span>)</h3>
-      <div id="liste-produits-admin"></div>
+      <div class="tableau-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Prix</th>
+              <th>Vendeur</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="corps-produits"></tbody>
+        </table>
+      </div>
+
+      <h3 class="titre-section">Commandes (<span id="nb-commandes">0</span>)</h3>
+      <div class="tableau-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Livraison</th>
+              <th>Articles</th>
+              <th>Total</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody id="corps-commandes"></tbody>
+        </table>
+      </div>
+
     </div>
 
   </div>
@@ -102,6 +215,7 @@
         btnDeconnexion.style.display = "inline-block";
         chargerVendeurs();
         chargerProduits();
+        chargerCommandes();
         verifierLienAcceptation();
       } else if (user && user.uid !== ADMIN_UID) {
         alert("Ce compte n'est pas administrateur.");
@@ -173,35 +287,38 @@
     function chargerVendeurs() {
       db.collection("vendeurs").onSnapshot((snapshot) => {
         document.getElementById("nb-vendeurs").textContent = snapshot.size;
-        const liste = document.getElementById("liste-vendeurs");
+        const corps = document.getElementById("corps-vendeurs");
         if (snapshot.empty) {
-          liste.innerHTML = "<p>Aucun vendeur pour l'instant.</p>";
+          corps.innerHTML = `<tr><td colspan="5" class="vide">Aucun vendeur pour l'instant.</td></tr>`;
           return;
         }
-        liste.innerHTML = snapshot.docs
+        corps.innerHTML = snapshot.docs
           .map((doc) => {
             const v = doc.data();
-            const statutTexte =
-              v.statut === "valide" ? '<span class="statut-valide">Validé</span>' :
-              v.statut === "code_envoye" ? '<span class="statut-attente">Code envoyé</span>' :
-              v.statut === "refuse" ? '<span class="statut-refuse">Refusé</span>' :
-              '<span class="statut-attente">En attente</span>';
-            const boutons =
+            const badge =
+              v.statut === "valide" ? '<span class="badge badge-valide">Validé</span>' :
+              v.statut === "code_envoye" ? '<span class="badge badge-attente">Code envoyé</span>' :
+              v.statut === "refuse" ? '<span class="badge badge-refuse">Refusé</span>' :
+              '<span class="badge badge-attente">En attente</span>';
+            const actions =
               v.statut === "en_attente"
-                ? `<button class="accepter" data-uid="${doc.id}">Accepter</button>
-                   <button class="refuser" data-uid="${doc.id}">Refuser</button>`
+                ? `<button class="btn-petit btn-accepter" data-uid="${doc.id}" data-action="accepter">Accepter</button>
+                   <button class="btn-petit btn-refuser" data-uid="${doc.id}" data-action="refuser">Refuser</button>`
                 : "";
-            return `<div class="ligne">
-              <span><strong>${v.nomVendeur || "?"}</strong> — ${v.email || ""} — ${statutTexte}</span>
-              ${boutons}
-            </div>`;
+            return `<tr>
+              <td><strong>${v.nomVendeur || "?"}</strong></td>
+              <td>${v.email || ""}</td>
+              <td>${v.whatsapp || ""}</td>
+              <td>${badge}</td>
+              <td>${actions}</td>
+            </tr>`;
           })
           .join("");
 
-        liste.querySelectorAll("button.accepter").forEach((btn) => {
+        corps.querySelectorAll("button[data-action='accepter']").forEach((btn) => {
           btn.addEventListener("click", () => accepterVendeur(btn.dataset.uid));
         });
-        liste.querySelectorAll("button.refuser").forEach((btn) => {
+        corps.querySelectorAll("button[data-action='refuser']").forEach((btn) => {
           btn.addEventListener("click", () => refuserVendeur(btn.dataset.uid));
         });
       });
@@ -210,25 +327,64 @@
     function chargerProduits() {
       db.collection("produits").orderBy("dateAjout", "desc").onSnapshot((snapshot) => {
         document.getElementById("nb-produits").textContent = snapshot.size;
-        const liste = document.getElementById("liste-produits-admin");
+        const corps = document.getElementById("corps-produits");
         if (snapshot.empty) {
-          liste.innerHTML = "<p>Aucun produit pour l'instant.</p>";
+          corps.innerHTML = `<tr><td colspan="4" class="vide">Aucun produit pour l'instant.</td></tr>`;
           return;
         }
-        liste.innerHTML = snapshot.docs
+        corps.innerHTML = snapshot.docs
           .map((doc) => {
             const p = doc.data();
-            return `<div class="ligne">
-              <span>${p.nom} — ${Number(p.prix).toLocaleString("fr-FR")} F CFA — <em>${p.nomVendeur || ""}</em></span>
-              <button data-id="${doc.id}">Supprimer</button>
-            </div>`;
+            return `<tr>
+              <td>${p.nom}</td>
+              <td>${Number(p.prix).toLocaleString("fr-FR")} F CFA</td>
+              <td><em>${p.nomVendeur || ""}</em></td>
+              <td><button class="btn-petit btn-supprimer" data-id="${doc.id}">Supprimer</button></td>
+            </tr>`;
           })
           .join("");
-        liste.querySelectorAll("button[data-id]").forEach((btn) => {
+        corps.querySelectorAll("button[data-id]").forEach((btn) => {
           btn.addEventListener("click", async () => {
             if (confirm("Supprimer ce produit ?")) {
               await db.collection("produits").doc(btn.dataset.id).delete();
             }
+          });
+        });
+      });
+    }
+
+    const STATUTS_COMMANDE = ["en attente", "confirmée", "en livraison", "livrée"];
+
+    function chargerCommandes() {
+      db.collection("commandes").orderBy("dateCommande", "desc").onSnapshot((snapshot) => {
+        document.getElementById("nb-commandes").textContent = snapshot.size;
+        const corps = document.getElementById("corps-commandes");
+        if (snapshot.empty) {
+          corps.innerHTML = `<tr><td colspan="5" class="vide">Aucune commande pour l'instant.</td></tr>`;
+          return;
+        }
+        corps.innerHTML = snapshot.docs
+          .map((doc) => {
+            const c = doc.data();
+            const articles = (c.articles || [])
+              .map((a) => `<li>${a.quantite}x ${a.nom} <em>(${a.nomVendeur || ""})</em></li>`)
+              .join("");
+            const options = STATUTS_COMMANDE.map(
+              (s) => `<option value="${s}" ${s === c.statut ? "selected" : ""}>${s}</option>`
+            ).join("");
+            return `<tr>
+              <td><strong>${c.client?.nom || "Client"}</strong><br><span style="color:#888;">${c.client?.telephone || ""}</span></td>
+              <td>${c.client?.adresse || ""}, ${c.client?.ville || ""}</td>
+              <td><ul class="liste-articles">${articles}</ul></td>
+              <td>${Number(c.total || 0).toLocaleString("fr-FR")} F CFA</td>
+              <td><select class="statut-select" data-id="${doc.id}">${options}</select></td>
+            </tr>`;
+          })
+          .join("");
+
+        corps.querySelectorAll(".statut-select").forEach((select) => {
+          select.addEventListener("change", async () => {
+            await db.collection("commandes").doc(select.dataset.id).update({ statut: select.value });
           });
         });
       });
