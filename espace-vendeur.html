@@ -12,48 +12,124 @@
     .nav-liens a { color: white; text-decoration: none; font-size: 0.9rem; }
     .nav-liens a:hover { text-decoration: underline; }
     #btn-deconnexion { background: none; border: 1px solid white; color: white; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
-    .conteneur { max-width: 500px; margin: 30px auto; padding: 0 16px; }
+    .conteneur { max-width: 600px; margin: 30px auto; padding: 0 16px; }
     .carte { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-bottom: 20px; }
+    .carte h2 { margin-top: 0; }
     label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 14px; }
     input, textarea { width: 100%; padding: 9px; margin-top: 4px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; font-family: Arial, sans-serif; }
     button { background: #16213E; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
     .message { font-size: 0.9rem; font-weight: bold; min-height: 20px; }
     .apercu-image { max-width: 120px; max-height: 120px; border-radius: 8px; margin-top: 8px; display: none; }
-    .produit-ligne { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    .produit-ligne button { background: #D6336C; padding: 5px 10px; font-size: 0.8rem; }
+
+    /* ===== Mes produits ===== */
+    .grille-mes-produits {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .mini-carte-produit {
+      border: 1px solid #eee;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #FBF8F1;
+    }
+    .mini-carte-produit img {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      display: block;
+      background: #eee;
+    }
+    .mini-carte-produit .infos {
+      padding: 8px 10px;
+    }
+    .mini-carte-produit .nom {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin: 0 0 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mini-carte-produit .prix {
+      font-size: 0.82rem;
+      color: #D6336C;
+      font-weight: bold;
+      margin: 0 0 8px;
+    }
+    .mini-carte-produit button {
+      width: 100%;
+      background: #D6336C;
+      padding: 6px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+    }
+
+    /* ===== Mes commandes ===== */
     .carte-commande {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      font-size: 0.9rem;
+      background: #FBF8F1;
+      border: 1px solid #eee;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
     }
     .carte-commande .entete {
       display: flex;
       justify-content: space-between;
-      font-weight: bold;
+      align-items: flex-start;
       margin-bottom: 6px;
     }
+    .carte-commande .client-nom {
+      font-weight: bold;
+      font-size: 0.95rem;
+    }
+    .carte-commande .client-tel {
+      font-size: 0.8rem;
+      color: #888;
+    }
+    .carte-commande .sous-total {
+      font-weight: bold;
+      color: #D6336C;
+      font-size: 0.95rem;
+    }
+    .carte-commande .livraison {
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 8px;
+    }
     .carte-commande ul {
-      margin: 6px 0;
+      margin: 0 0 10px;
       padding-left: 18px;
+      font-size: 0.88rem;
+    }
+    .pied-commande {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .badge-statut {
       display: inline-block;
       font-size: 0.75rem;
       font-weight: bold;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 10px;
-      background: #FEEBC8;
-      color: #975A16;
     }
+    .badge-statut.attente { background: #FEEBC8; color: #975A16; }
+    .badge-statut.confirmee { background: #BEE3F8; color: #2A4365; }
+    .badge-statut.livraison { background: #E9D8FD; color: #553C9A; }
+    .badge-statut.livree { background: #C6F6D5; color: #22543D; }
     .btn-suppr-commande {
-      background: #D6336C;
-      padding: 5px 10px;
+      background: none;
+      color: #D6336C;
+      border: 1px solid #D6336C;
+      padding: 4px 10px;
       font-size: 0.78rem;
-      margin-top: 8px;
+      border-radius: 6px;
+    }
+    .vide {
+      color: #888;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -93,7 +169,7 @@
 
     <div class="carte">
       <h2>Mes produits</h2>
-      <div id="liste-mes-produits">Chargement...</div>
+      <div id="liste-mes-produits" class="grille-mes-produits">Chargement...</div>
     </div>
 
     <div class="carte">
@@ -265,16 +341,20 @@
         .onSnapshot((snapshot) => {
           const liste = document.getElementById("liste-mes-produits");
           if (snapshot.empty) {
-            liste.innerHTML = "<p>Tu n'as pas encore ajouté de produit.</p>";
+            liste.innerHTML = `<p class="vide">Tu n'as pas encore ajouté de produit.</p>`;
             return;
           }
           liste.innerHTML = snapshot.docs
             .map((doc) => {
               const p = doc.data();
               return `
-              <div class="produit-ligne">
-                <span>${p.nom} — ${Number(p.prix).toLocaleString("fr-FR")} F CFA</span>
-                <button data-id="${doc.id}">Supprimer</button>
+              <div class="mini-carte-produit">
+                <img src="${p.image}" alt="${p.nom}" onerror="this.src='https://placehold.co/200x150?text=Photo'">
+                <div class="infos">
+                  <p class="nom">${p.nom}</p>
+                  <p class="prix">${Number(p.prix).toLocaleString("fr-FR")} F CFA</p>
+                  <button data-id="${doc.id}">Supprimer</button>
+                </div>
               </div>`;
             })
             .join("");
@@ -289,6 +369,13 @@
         });
     }
 
+    function classeStatut(statut) {
+      if (statut === "confirmée") return "confirmee";
+      if (statut === "en livraison") return "livraison";
+      if (statut === "livrée") return "livree";
+      return "attente";
+    }
+
     function chargerMesCommandes() {
       db.collection("commandes")
         .where("vendeurIds", "array-contains", vendeurConnecte.uid)
@@ -296,7 +383,7 @@
         .onSnapshot((snapshot) => {
           const liste = document.getElementById("liste-mes-commandes");
           if (snapshot.empty) {
-            liste.innerHTML = "<p>Aucune commande pour l'instant.</p>";
+            liste.innerHTML = `<p class="vide">Aucune commande pour l'instant.</p>`;
             return;
           }
           liste.innerHTML = snapshot.docs
@@ -305,17 +392,22 @@
               const mesArticles = (c.articles || []).filter((a) => a.vendeurId === vendeurConnecte.uid);
               const items = mesArticles.map((a) => `<li>${a.quantite}x ${a.nom}</li>`).join("");
               const sousTotal = mesArticles.reduce((s, a) => s + a.prix * a.quantite, 0);
+              const statut = c.statut || "en attente";
               return `
               <div class="carte-commande">
                 <div class="entete">
-                  <span>${c.client?.nom || "Client"} — ${c.client?.telephone || ""}</span>
-                  <span>${sousTotal.toLocaleString("fr-FR")} F CFA</span>
+                  <div>
+                    <div class="client-nom">${c.client?.nom || "Client"}</div>
+                    <div class="client-tel">${c.client?.telephone || ""}</div>
+                  </div>
+                  <div class="sous-total">${sousTotal.toLocaleString("fr-FR")} F CFA</div>
                 </div>
-                <div>Livraison : ${c.client?.adresse || ""}, ${c.client?.ville || ""}</div>
+                <div class="livraison">📍 ${c.client?.adresse || ""}, ${c.client?.ville || ""}</div>
                 <ul>${items}</ul>
-                <span class="badge-statut">${c.statut || "en attente"}</span>
-                <br>
-                <button class="btn-suppr-commande" data-suppr-cmd="${doc.id}">Supprimer</button>
+                <div class="pied-commande">
+                  <span class="badge-statut ${classeStatut(statut)}">${statut}</span>
+                  <button class="btn-suppr-commande" data-suppr-cmd="${doc.id}">Supprimer</button>
+                </div>
               </div>`;
             })
             .join("");
