@@ -172,6 +172,7 @@
               <th>Articles</th>
               <th>Total</th>
               <th>Statut</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="corps-commandes"></tbody>
@@ -360,7 +361,7 @@
         document.getElementById("nb-commandes").textContent = snapshot.size;
         const corps = document.getElementById("corps-commandes");
         if (snapshot.empty) {
-          corps.innerHTML = `<tr><td colspan="5" class="vide">Aucune commande pour l'instant.</td></tr>`;
+          corps.innerHTML = `<tr><td colspan="6" class="vide">Aucune commande pour l'instant.</td></tr>`;
           return;
         }
         corps.innerHTML = snapshot.docs
@@ -378,6 +379,7 @@
               <td><ul class="liste-articles">${articles}</ul></td>
               <td>${Number(c.total || 0).toLocaleString("fr-FR")} F CFA</td>
               <td><select class="statut-select" data-id="${doc.id}">${options}</select></td>
+              <td><button class="btn-petit btn-supprimer" data-suppr-cmd="${doc.id}">Supprimer</button></td>
             </tr>`;
           })
           .join("");
@@ -385,6 +387,14 @@
         corps.querySelectorAll(".statut-select").forEach((select) => {
           select.addEventListener("change", async () => {
             await db.collection("commandes").doc(select.dataset.id).update({ statut: select.value });
+          });
+        });
+
+        corps.querySelectorAll("button[data-suppr-cmd]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (confirm("Supprimer cette commande ?")) {
+              await db.collection("commandes").doc(btn.dataset.supprCmd).delete();
+            }
           });
         });
       });
