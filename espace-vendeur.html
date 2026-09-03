@@ -379,7 +379,7 @@
     function chargerMesCommandes() {
       db.collection("commandes")
         .where("vendeurIds", "array-contains", vendeurConnecte.uid)
-        .orderBy("dateCommande", "desc")
+        .where(`masqueePar.${vendeurConnecte.uid}`, "!=", true)
         .onSnapshot((snapshot) => {
           const liste = document.getElementById("liste-mes-commandes");
           if (snapshot.empty) {
@@ -406,7 +406,7 @@
                 <ul>${items}</ul>
                 <div class="pied-commande">
                   <span class="badge-statut ${classeStatut(statut)}">${statut}</span>
-                  <button class="btn-suppr-commande" data-suppr-cmd="${doc.id}">Supprimer</button>
+                  <button class="btn-suppr-commande" data-suppr-cmd="${doc.id}">Retirer de ma liste</button>
                 </div>
               </div>`;
             })
@@ -414,8 +414,10 @@
 
           liste.querySelectorAll("button[data-suppr-cmd]").forEach((btn) => {
             btn.addEventListener("click", async () => {
-              if (confirm("Supprimer cette commande ?")) {
-                await db.collection("commandes").doc(btn.dataset.supprCmd).delete();
+              if (confirm("Retirer cette commande de ta liste ?")) {
+                await db.collection("commandes").doc(btn.dataset.supprCmd).update({
+                  [`masqueePar.${vendeurConnecte.uid}`]: true,
+                });
               }
             });
           });
