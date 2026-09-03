@@ -49,6 +49,12 @@
       background: #FEEBC8;
       color: #975A16;
     }
+    .btn-suppr-commande {
+      background: #D6336C;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -308,9 +314,19 @@
                 <div>Livraison : ${c.client?.adresse || ""}, ${c.client?.ville || ""}</div>
                 <ul>${items}</ul>
                 <span class="badge-statut">${c.statut || "en attente"}</span>
+                <br>
+                <button class="btn-suppr-commande" data-suppr-cmd="${doc.id}">Supprimer</button>
               </div>`;
             })
             .join("");
+
+          liste.querySelectorAll("button[data-suppr-cmd]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              if (confirm("Supprimer cette commande ?")) {
+                await db.collection("commandes").doc(btn.dataset.supprCmd).delete();
+              }
+            });
+          });
         }, (erreur) => {
           console.error(erreur);
           document.getElementById("liste-mes-commandes").innerHTML =
