@@ -379,14 +379,21 @@
     function chargerMesCommandes() {
       db.collection("commandes")
         .where("vendeurIds", "array-contains", vendeurConnecte.uid)
-        .where(`masqueePar.${vendeurConnecte.uid}`, "!=", true)
         .onSnapshot((snapshot) => {
           const liste = document.getElementById("liste-mes-commandes");
-          if (snapshot.empty) {
+
+          const docsVisibles = snapshot.docs.filter((doc) => {
+            const c = doc.data();
+            const masquees = c.masqueePour || [];
+            return !masquees.includes(vendeurConnecte.uid);
+          });
+
+          if (docsVisibles.length === 0) {
             liste.innerHTML = `<p class="vide">Aucune commande pour l'instant.</p>`;
             return;
           }
-          liste.innerHTML = snapshot.docs
+
+          liste.innerHTML = docsVisibles
             .map((doc) => {
               const c = doc.data();
               const mesArticles = (c.articles || []).filter((a) => a.vendeurId === vendeurConnecte.uid);
@@ -416,7 +423,7 @@
             btn.addEventListener("click", async () => {
               if (confirm("Retirer cette commande de ta liste ?")) {
                 await db.collection("commandes").doc(btn.dataset.supprCmd).update({
-                  [`masqueePar.${vendeurConnecte.uid}`]: true,
+                  masqueePour: firebase.firestore.FieldValue.arrayUnion(vendeurConnecte.uid),
                 });
               }
             });
