@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MarketSenegal — Admin</title>
+  <title>Éclat by Mamofa — Admin</title>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     body { margin: 0; font-family: Arial, sans-serif; background: #FAF6EE; color: #222; }
-    header { background: #16213E; color: white; padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
-    header a { color: white; text-decoration: none; font-weight: bold; font-size: 1.2rem; }
+    header { background: #16213E; color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
+    .logo-img { height: 42px; display: block; }
     .nav-liens { display: flex; gap: 16px; align-items: center; }
     .nav-liens a { color: white; text-decoration: none; font-size: 0.9rem; }
     .nav-liens a:hover { text-decoration: underline; }
@@ -20,90 +20,34 @@
     button { background: #16213E; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; }
     .message { font-size: 0.9rem; font-weight: bold; min-height: 20px; }
 
-    .titre-section {
-      margin-top: 34px;
-      margin-bottom: 10px;
-      font-size: 1.2rem;
-    }
+    .titre-section { margin-top: 34px; margin-bottom: 10px; font-size: 1.2rem; }
 
-    .tableau-wrap {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-    thead th {
-      text-align: left;
-      background: #F0EBDD;
-      padding: 10px 12px;
-      font-size: 0.78rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #555;
-      border-bottom: 1px solid #ddd;
-    }
-    tbody td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #eee;
-      vertical-align: top;
-    }
-    tbody tr:last-child td {
-      border-bottom: none;
-    }
-    tbody tr:hover {
-      background: #FBF8F1;
-    }
+    .tableau-wrap { background: white; border: 1px solid #ddd; border-radius: 10px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead th { text-align: left; background: #F0EBDD; padding: 10px 12px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: #555; border-bottom: 1px solid #ddd; }
+    tbody td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #FBF8F1; }
 
-    .btn-petit {
-      padding: 5px 10px;
-      font-size: 0.78rem;
-      border-radius: 6px;
-      white-space: nowrap;
-    }
+    .btn-petit { padding: 5px 10px; font-size: 0.78rem; border-radius: 6px; white-space: nowrap; }
     .btn-supprimer { background: #D6336C; }
     .btn-accepter { background: #0B6E6E; margin-right: 4px; }
     .btn-refuser { background: #888; }
 
-    .badge {
-      display: inline-block;
-      font-size: 0.75rem;
-      font-weight: bold;
-      padding: 3px 9px;
-      border-radius: 10px;
-      white-space: nowrap;
-    }
+    .badge { display: inline-block; font-size: 0.75rem; font-weight: bold; padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
     .badge-attente { background: #FEEBC8; color: #975A16; }
     .badge-valide { background: #C6F6D5; color: #22543D; }
     .badge-refuse { background: #FED7D7; color: #822727; }
 
-    .statut-select {
-      padding: 5px 6px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      font-size: 0.82rem;
-    }
-
-    .liste-articles {
-      margin: 0;
-      padding-left: 16px;
-    }
-
-    .vide {
-      padding: 16px;
-      color: #888;
-      font-size: 0.9rem;
-    }
+    .statut-select { padding: 5px 6px; border-radius: 6px; border: 1px solid #ddd; font-size: 0.82rem; }
+    .liste-articles { margin: 0; padding-left: 16px; }
+    .vide { padding: 16px; color: #888; font-size: 0.9rem; }
   </style>
 </head>
 <body>
 
   <header>
-    <a href="index.html">MarketSenegal</a>
+    <a href="index.html"><img src="image/logo.png" alt="Éclat by Mamofa" class="logo-img"></a>
     <nav class="nav-liens">
       <a href="index.html">Accueil</a>
       <a href="vendeur.html">Devenir vendeur</a>

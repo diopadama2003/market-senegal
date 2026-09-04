@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MarketSenegal</title>
+  <title>Éclat by Mamofa</title>
   <style>
     body {
       margin: 0;
@@ -18,11 +18,16 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 25px;
+      padding: 12px 25px;
     }
 
-    header h2 {
-      margin: 0;
+    .logo-lien {
+      display: flex;
+      align-items: center;
+    }
+    .logo-img {
+      height: 42px;
+      display: block;
     }
 
     .nav-liens {
@@ -395,7 +400,7 @@
 <body>
 
   <header>
-    <h2>MarketSenegal</h2>
+    <a href="index.html" class="logo-lien"><img src="image/logo.png" alt="Éclat by Mamofa" class="logo-img"></a>
     <nav class="nav-liens">
       <a href="index.html">Accueil</a>
       <a href="vendeur.html">Devenir vendeur</a>
@@ -404,8 +409,8 @@
   </header>
 
   <section class="hero">
-    <h1>Le marché sénégalais, dans ta poche</h1>
-    <p>Trouve tout ce qu'on vend, où que tu sois, et fais-toi livrer.</p>
+    <h1>Éclat by Mamofa</h1>
+    <p>Fashion • Beauty • Perfumes — trouve tout ce qu'on vend, et fais-toi livrer.</p>
   </section>
 
   <div class="toolbar">
@@ -496,7 +501,6 @@
       return Number(montant).toLocaleString("fr-FR") + " F CFA";
     }
 
-    // Charger les produits depuis Firestore, en temps réel
     db.collection("produits").orderBy("dateAjout", "desc").onSnapshot(
       (snapshot) => {
         TOUS_LES_PRODUITS = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -612,7 +616,6 @@
       afficherProduits();
     });
 
-    // ===== Panier =====
     function ajouterAuPanier(id) {
       const produit = TOUS_LES_PRODUITS.find((p) => p.id === id);
       if (!produit) return;
@@ -673,7 +676,6 @@
       modalProduit.classList.remove("ouvert");
     });
 
-    // ===== Commande =====
     document.getElementById("btn-commander").addEventListener("click", () => {
       if (panier.length === 0) return;
       articlesACommander = null;
@@ -740,7 +742,7 @@
           const recap = groupe.articles.map((l) => `- ${l.quantite}x ${l.nom} (${formatFCFA(l.prix)})`).join("\n");
           const sousTotal = groupe.articles.reduce((s, l) => s + l.prix * l.quantite, 0);
           const message =
-            `Nouvelle commande MarketSenegal\n` +
+            `Nouvelle commande Éclat by Mamofa\n` +
             `Client: ${client.nom} (${client.telephone})\n` +
             `Livraison: ${client.adresse}, ${client.ville}\n\n` +
             `Articles:\n${recap}\n\n` +
