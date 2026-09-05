@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Éclat by Mamofa</title>
   <style>
+    :root {
+      --or: #D4AF37;
+      --or-fonce: #B8941F;
+      --marine: #16213E;
+      --marine-clair: #1F2E52;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
@@ -13,12 +20,13 @@
     }
 
     header {
-      background: #16213E;
+      background: var(--marine);
       color: white;
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 12px 25px;
+      border-bottom: 2px solid var(--or);
     }
 
     .logo-lien {
@@ -39,30 +47,60 @@
       color: white;
       text-decoration: none;
       font-size: 0.9rem;
+      transition: color 0.2s;
     }
     .nav-liens a:hover {
-      text-decoration: underline;
+      color: var(--or);
     }
 
     header button {
-      background: #F5A623;
+      background: var(--or);
+      color: var(--marine);
       border: none;
-      padding: 8px 14px;
+      padding: 9px 16px;
       border-radius: 20px;
       font-weight: bold;
       cursor: pointer;
     }
 
     .hero {
-      background: #1F2E52;
+      background: linear-gradient(160deg, var(--marine) 0%, var(--marine-clair) 100%);
       color: white;
       text-align: center;
-      padding: 40px 20px;
+      padding: 55px 20px 50px;
+      position: relative;
+    }
+
+    .hero .eyebrow {
+      font-size: 0.8rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--or);
+      margin: 0 0 10px;
+      font-weight: bold;
     }
 
     .hero h1 {
-      margin: 0 0 10px;
-      font-size: 2rem;
+      margin: 0 0 8px;
+      font-size: 2.3rem;
+      font-family: Georgia, 'Times New Roman', serif;
+      letter-spacing: 1px;
+    }
+
+    .hero .trait-or {
+      width: 70px;
+      height: 3px;
+      background: var(--or);
+      margin: 16px auto 20px;
+      border-radius: 2px;
+    }
+
+    .hero p {
+      max-width: 480px;
+      margin: 0 auto;
+      color: #D8DCEA;
+      font-size: 1.02rem;
+      line-height: 1.5;
     }
 
     .toolbar {
@@ -77,6 +115,10 @@
       font-size: 1rem;
       margin-bottom: 12px;
       box-sizing: border-box;
+    }
+    #recherche:focus {
+      outline: none;
+      border-color: var(--or);
     }
 
     .categories {
@@ -94,8 +136,10 @@
     }
 
     .chip.active {
-      background: #16213E;
-      color: white;
+      background: var(--marine);
+      color: var(--or);
+      border-color: var(--or);
+      font-weight: bold;
     }
 
     .etat {
@@ -117,6 +161,11 @@
       border-radius: 8px;
       overflow: hidden;
       text-align: center;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .carte-produit:hover {
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
     }
 
     .carte-produit img {
@@ -139,18 +188,9 @@
     }
 
     .prix {
-      color: #D6336C;
+      color: var(--or-fonce);
       font-weight: bold;
       margin: 8px 0;
-    }
-
-    .carte-produit button {
-      background: #16213E;
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 20px;
-      cursor: pointer;
     }
 
     .boutons-produit {
@@ -160,9 +200,9 @@
     }
     .btn-commander-direct {
       flex: 1;
-      background: #D6336C;
-      color: white;
-      border: none;
+      background: var(--marine);
+      color: var(--or);
+      border: 1px solid var(--or);
       padding: 8px 10px;
       border-radius: 20px;
       cursor: pointer;
@@ -170,7 +210,7 @@
       font-weight: bold;
     }
     .btn-ajouter {
-      background: #16213E;
+      background: var(--marine);
       color: white;
       border: none;
       padding: 8px 10px;
@@ -230,8 +270,8 @@
 
     #btn-commander {
       width: 100%;
-      background: #D6336C;
-      color: white;
+      background: var(--or);
+      color: var(--marine);
       border: none;
       padding: 12px;
       border-radius: 8px;
@@ -297,7 +337,7 @@
 
     .modal button[type="submit"] {
       width: 100%;
-      background: #16213E;
+      background: var(--marine);
       color: white;
       border: none;
       padding: 12px;
@@ -314,7 +354,7 @@
       float: right;
     }
 
-    /* ===== Fiche produit plein ecran (au clic sur la photo) ===== */
+    /* ===== Fiche produit plein ecran ===== */
     .modal-produit {
       top: 0;
       left: 0;
@@ -351,7 +391,7 @@
       margin: 0 0 8px;
     }
     .modal-produit-prix {
-      color: #D6336C;
+      color: var(--or-fonce);
       font-weight: bold;
       font-size: 1.4rem;
       margin: 0 0 20px;
@@ -373,8 +413,8 @@
       display: block;
       width: 100%;
       background: none;
-      color: #16213E;
-      border: 1px solid #16213E;
+      color: var(--marine);
+      border: 1px solid var(--marine);
       padding: 13px;
       border-radius: 8px;
       font-weight: bold;
@@ -409,12 +449,14 @@
   </header>
 
   <section class="hero">
-    <h1>Éclat by Mamofa</h1>
-    <p>Fashion • Beauty • Perfumes — trouve tout ce qu'on vend, et fais-toi livrer.</p>
+    <p class="eyebrow">Fashion • Beauty • Perfumes</p>
+    <h1>L'élégance à portée de clic</h1>
+    <div class="trait-or"></div>
+    <p>Mode, beauté et parfums soigneusement sélectionnés, livrés partout où tu es. Découvre des pièces qui te ressemblent.</p>
   </section>
 
   <div class="toolbar">
-    <input type="search" id="recherche" placeholder="Chercher un produit... (ex: parfum, robe, riz)">
+    <input type="search" id="recherche" placeholder="Chercher un produit... (ex: parfum, robe, sac)">
     <div class="categories" id="categories">
       <button class="chip active" data-cat="tous">Tous</button>
     </div>
@@ -458,7 +500,7 @@
     </form>
   </div>
 
-  <!-- Fiche produit plein ecran (photo + infos + actions) -->
+  <!-- Fiche produit plein ecran -->
   <div class="modal modal-produit" id="modal-produit">
     <button id="fermer-modal-produit">✕</button>
     <img id="produit-img" class="modal-produit-img" alt="">
