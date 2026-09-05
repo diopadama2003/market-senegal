@@ -38,6 +38,12 @@
       display: block;
     }
 
+    .header-droite {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
     .nav-liens {
       display: flex;
       gap: 16px;
@@ -467,11 +473,13 @@
 
   <header>
     <a href="index.html" class="logo-lien"><img src="image/logo.png" alt="Éclat by Mamofa" class="logo-img"></a>
-    <nav class="nav-liens">
-      <a href="index.html">Accueil</a>
-      <a href="vendeur.html">Devenir vendeur</a>
-    </nav>
-    <button id="btn-panier">🧺 Panier (<span id="panier-count">0</span>)</button>
+    <div class="header-droite">
+      <nav class="nav-liens">
+        <a href="index.html">Accueil</a>
+        <a href="vendeur.html">Devenir vendeur</a>
+      </nav>
+      <button id="btn-panier">🧺 Panier (<span id="panier-count">0</span>)</button>
+    </div>
   </header>
 
   <section class="hero">
